@@ -63,7 +63,7 @@ The project is configured for automatic deployment to GitHub Pages.
 
 #### Automatic Deployment
 
-When you push changes to the `main` branch, GitHub Actions will automatically:
+When you push changes to the `master` branch, GitHub Actions will automatically:
 1. Build the project
 2. Deploy it to GitHub Pages
 
