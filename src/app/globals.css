@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+:root {
+  --background-primary: #0a0a0a;
+  --text-primary: #1eff8e;
+  --text-secondary: #ff00ff;
+  --accent: #ffcc00;
+  --border: #2080ff;
+  --arcade-shadow: 0 0 10px #1eff8e;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-family: 'Press Start 2P', cursive;
+}
+
+.arcade-screen {
+  border: 4px solid var(--border);
+  border-radius: 4px;
+  box-shadow: var(--arcade-shadow);
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 2rem;
+}
+
+.neon-text {
+  text-shadow: 0 0 5px var(--text-primary), 0 0 10px var(--text-primary);
+}
+
+.pixel-button {
+  background-color: var(--background-primary);
+  border: 2px solid var(--text-primary);
+  color: var(--text-primary);
+  padding: 1rem 2rem;
+  text-transform: uppercase;
+  font-family: 'Press Start 2P', cursive;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pixel-button:hover {
+  background-color: var(--text-primary);
+  color: var(--background-primary);
+  box-shadow: 0 0 10px var(--text-primary);
+}
+
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.1) 50%
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 100;
+} 
