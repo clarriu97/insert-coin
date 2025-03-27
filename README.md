@@ -2,6 +2,8 @@
 
 A retro-themed web arcade where you can play classic retro games.
 
+> **Note**: This project has been entirely developed by AI under the direction of clarriu97. Every line of code, from the retro-styled interface to the game implementations, has been crafted through AI assistance while maintaining high quality and best practices.
+
 ## Features
 
 - Retro arcade-style interface
@@ -14,6 +16,7 @@ A retro-themed web arcade where you can play classic retro games.
 ### Snake 🐍
 The classic Snake game where you control a snake that grows as it eats food. Don't crash into the walls or yourself!
 - Use arrow keys to control the snake
+- Press space or click the Start Game button to begin
 - Eat food to grow longer and increase your score
 - Game over if you hit the walls or your own tail
 

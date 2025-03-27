@@ -1,38 +1,23 @@
 {
   "name": "insert-coin",
   "version": "1.0.0",
-  "description": "Web where you can play different classic retro games",
-  "private": true,
+  "description": "A retro-themed web arcade where you can play classic retro games",
+  "main": "index.html",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "export": "next build",
-    "deploy": "touch out/.nojekyll && gh-pages -d out -t true"
+    "dev": "live-server src --port=3000 --no-browser",
+    "build": "mkdir -p dist && cp -r src/* dist/",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/clarriu97/insert-coin.git"
-  },
-  "author": "clarriu97",
+  "keywords": [
+    "retro",
+    "arcade",
+    "games"
+  ],
+  "author": "",
   "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/clarriu97/insert-coin/issues"
-  },
-  "homepage": "https://github.com/clarriu97/insert-coin#readme",
-  "dependencies": {
-    "next": "^14.1.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "@types/react": "^18.2.67",
-    "@types/react-dom": "^18.2.22",
     "eslint": "^8.57.0",
-    "eslint-config-next": "^14.1.4",
-    "gh-pages": "^6.1.1",
-    "typescript": "^5.4.3"
+    "live-server": "^1.2.2"
   }
-}
+} 
