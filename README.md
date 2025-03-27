@@ -4,127 +4,98 @@ A retro-themed web arcade where you can play classic retro games.
 
 > **Note**: This project has been entirely developed by AI under the direction of clarriu97. Every line of code, from the retro-styled interface to the game implementations, has been crafted through AI assistance while maintaining high quality and best practices.
 
-## Features
+[![Deployment Status](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml/badge.svg)](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml)
+[![Play Now!](https://img.shields.io/badge/Play%20Now!-GitHub%20Pages-success?logo=github)](https://clarriu97.github.io/insert-coin/)
+[![Made with AI](https://img.shields.io/badge/Made%20with-AI-blueviolet?logo=openai)](https://github.com/clarriu97/insert-coin)
+[![Powered by Coffee](https://img.shields.io/badge/Powered%20by-☕%20Coffee-brown)](https://github.com/clarriu97/insert-coin)
+[![Retro Level](https://img.shields.io/badge/Retro%20Level-Over%209000!-orange)](https://github.com/clarriu97/insert-coin)
 
-- Retro arcade-style interface
-- Game selection screen
-- Classic Snake game implementation
-- Coming soon: More classic games like Tetris, Pac-Man, and Space Invaders
+## 🎮 Available Games
 
-## Available Games
+### 🐍 Snake
+- Classic snake gameplay
+- Retro neon aesthetics
+- Score tracking
+- Increasing difficulty
 
-### Snake 🐍
-The classic Snake game where you control a snake that grows as it eats food. Don't crash into the walls or yourself!
-- Use arrow keys to control the snake
-- Press space or click the Start Game button to begin
-- Eat food to grow longer and increase your score
-- Game over if you hit the walls or your own tail
+### 🟦 Tetris
+- Classic Tetris mechanics
+- Neon-colored pieces
+- Score and level system
+- Next piece preview
+- Pause functionality
 
-## Tech Stack
+## 🚀 Features
 
-- [Next.js](https://nextjs.org/) - React framework
-- [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
-- CSS Modules - Component scoped styling
-- HTML Canvas - For game rendering
+- Retro arcade cabinet interface
+- Neon aesthetic design
+- Responsive controls
+- Score tracking system
+- Game state management
+- Mobile-friendly layout
 
-## Getting Started
+## 🛠️ Tech Stack
 
-### Prerequisites
+- Vanilla JavaScript
+- HTML5 Canvas
+- CSS3 with custom properties
+- Responsive Design
+- GitHub Pages for deployment
+- GitHub Actions for CI/CD
 
-- Node.js (v18 or higher)
-- npm or yarn
-
-### Installation
+## 🎯 Getting Started
 
 1. Clone the repository:
-   ```
+   ```bash
    git clone https://github.com/clarriu97/insert-coin.git
    cd insert-coin
    ```
 
-2. Install dependencies:
-   ```
-   npm install
-   # or
-   yarn
-   ```
-
-3. Run the development server:
-   ```
-   npm run dev
-   # or
-   yarn dev
+2. Open `index.html` in your browser or use a local server:
+   ```bash
+   # Using Python
+   python -m http.server 8000
+   
+   # Using Node.js
+   npx serve
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+3. Start playing! 🎮
 
-## Deployment
-
-### GitHub Pages
-
-The project is configured for automatic deployment to GitHub Pages.
-
-#### Automatic Deployment
-
-When you push changes to the `master` branch, GitHub Actions will automatically:
-1. Build the project
-2. Deploy it to GitHub Pages
-
-You can view the deployed site at: https://clarriu97.github.io/insert-coin/
-
-#### Manual Deployment
-
-You can also deploy manually:
-
-1. Build and export the project:
-   ```
-   npm run export
-   ```
-
-2. Deploy to GitHub Pages:
-   ```
-   npm run deploy
-   ```
-
-## Available Scripts
-
-- `npm run dev` - Start the development server
-- `npm run build` - Build the application for production
-- `npm run start` - Start the production server
-- `npm run lint` - Run ESLint to check code quality
-- `npm run export` - Build the static site for deployment
-- `npm run deploy` - Deploy to GitHub Pages
-
-## Project Structure
+## 🎨 Project Structure
 
 ```
 insert-coin/
-├─ public/          # Static assets
-│  ├─ games/        # Game thumbnails
-│  │  └─ snake.png  # Snake game thumbnail
-│  ├─ sounds/       # Sound effects
-│  └─ favicon.ico   # Website favicon
 ├─ src/
-│  ├─ app/          # Next.js app directory
-│  │  ├─ games/     # Game implementations
-│  │  │  └─ snake/  # Snake game
-│  │  ├─ globals.css    # Global styles
-│  │  ├─ page.module.css # Page-specific styles
-│  │  ├─ page.tsx       # Main page component
-│  │  └─ layout.tsx     # Root layout
-├─ .github/         # GitHub configuration
-│  └─ workflows/    # GitHub Actions workflows
-├─ package.json     # Project dependencies and scripts
-├─ next.config.js   # Next.js configuration
-├─ tsconfig.json    # TypeScript configuration
-└─ .eslintrc.json   # ESLint configuration
+│  ├─ index.html      # Main entry point
+│  ├─ styles.css      # Global styles
+│  ├─ main.js         # Main JavaScript
+│  └─ games/          # Game implementations
+│     ├─ snake/       # Snake game files
+│     └─ tetris/      # Tetris game files
+└─ public/            # Static assets
 ```
 
-## License
+## 🔄 Development
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+The project uses GitHub Actions for continuous deployment to GitHub Pages. Any push to the main branch will trigger:
+1. Code validation
+2. Build process
+3. Automatic deployment
 
-## Acknowledgments
+## 🎯 Upcoming Features
 
-- Inspired by classic arcade cabinets and retro gaming
-- Font: [Press Start 2P](https://fonts.google.com/specimen/Press+Start+2P) 
+- [ ] More classic games
+- [ ] High score system
+- [ ] Sound effects
+- [ ] Mobile touch controls
+- [ ] Multiplayer modes
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Inspired by classic arcade cabinets
+- Font: [Press Start 2P](https://fonts.googleapis.com/css2?family=Press+Start+2P) 
