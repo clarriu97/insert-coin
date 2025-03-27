@@ -76,7 +76,7 @@ class SnakeGame {
                 this.handleSpaceBar();
                 break;
             case 'Escape':
-                window.location.href = 'index.html';
+                window.location.href = '../../index.html';
                 break;
             }
         });
