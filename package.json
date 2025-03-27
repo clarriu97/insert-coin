@@ -1,0 +1,22 @@
+{
+  "name": "insert-coin",
+  "version": "1.0.0",
+  "description": "A retro-themed web arcade where you can play classic retro games",
+  "main": "index.html",
+  "scripts": {
+    "dev": "live-server src --port=3000 --no-browser",
+    "lint": "eslint src/**/*.js",
+    "lint:fix": "eslint src/**/*.js --fix"
+  },
+  "keywords": [
+    "retro",
+    "arcade",
+    "games"
+  ],
+  "author": "clarriu97",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "live-server": "^1.2.2"
+  }
+} 
