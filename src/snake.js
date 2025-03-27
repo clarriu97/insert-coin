@@ -52,32 +52,32 @@ class SnakeGame {
         // Control de teclas
         document.addEventListener('keydown', (e) => {
             switch (e.key) {
-                case 'ArrowUp':
-                    if (this.snakeDirection.y !== 1) {
-                        this.nextDirection = {x: 0, y: -1};
-                    }
-                    break;
-                case 'ArrowDown':
-                    if (this.snakeDirection.y !== -1) {
-                        this.nextDirection = {x: 0, y: 1};
-                    }
-                    break;
-                case 'ArrowLeft':
-                    if (this.snakeDirection.x !== 1) {
-                        this.nextDirection = {x: -1, y: 0};
-                    }
-                    break;
-                case 'ArrowRight':
-                    if (this.snakeDirection.x !== -1) {
-                        this.nextDirection = {x: 1, y: 0};
-                    }
-                    break;
-                case ' ':
-                    this.handleSpaceBar();
-                    break;
-                case 'Escape':
-                    window.location.href = 'index.html';
-                    break;
+            case 'ArrowUp':
+                if (this.snakeDirection.y !== 1) {
+                    this.nextDirection = {x: 0, y: -1};
+                }
+                break;
+            case 'ArrowDown':
+                if (this.snakeDirection.y !== -1) {
+                    this.nextDirection = {x: 0, y: 1};
+                }
+                break;
+            case 'ArrowLeft':
+                if (this.snakeDirection.x !== 1) {
+                    this.nextDirection = {x: -1, y: 0};
+                }
+                break;
+            case 'ArrowRight':
+                if (this.snakeDirection.x !== -1) {
+                    this.nextDirection = {x: 1, y: 0};
+                }
+                break;
+            case ' ':
+                this.handleSpaceBar();
+                break;
+            case 'Escape':
+                window.location.href = 'index.html';
+                break;
             }
         });
 
