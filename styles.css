@@ -1,0 +1,215 @@
+:root {
+  --neon-text-color: #ffd700;
+  --neon-border-color: #08f;
+  --cabinet-color: #2a2a2a;
+  --screen-color: #000;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Press Start 2P', cursive;
+  background-color: #121212;
+  color: white;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.arcade-cabinet {
+  background-color: var(--cabinet-color);
+  width: 90vw;
+  max-width: 1200px;
+  height: 90vh;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cabinet-header {
+  text-align: center;
+  padding: 20px;
+}
+
+.neon-text {
+  color: var(--neon-text-color);
+  text-shadow: 0 0 5px var(--neon-text-color),
+               0 0 10px var(--neon-text-color),
+               0 0 20px var(--neon-text-color),
+               0 0 40px var(--neon-border-color);
+  animation: flicker 1.5s infinite alternate;
+}
+
+.coin-slot {
+  margin-top: 20px;
+  font-size: 0.8em;
+  color: #888;
+}
+
+.coin-text {
+  animation: blink 1s infinite;
+}
+
+.screen {
+  background-color: var(--screen-color);
+  flex-grow: 1;
+  border-radius: 5px;
+  padding: 20px;
+  border: 2px solid #444;
+  overflow: auto;
+}
+
+.game-selection {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.game-card {
+  background-color: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 5px;
+  padding: 15px;
+  text-align: center;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.game-card:hover {
+  transform: scale(1.05);
+  border-color: var(--neon-text-color);
+}
+
+.game-card img {
+  width: 256px;
+  height: 256px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  object-fit: cover;
+}
+
+.game-card h2 {
+  font-size: 1em;
+  margin: 10px 0;
+}
+
+.status {
+  color: #ff4444;
+  font-size: 0.7em;
+}
+
+.cabinet-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+.joystick {
+  width: 60px;
+  height: 60px;
+  background-color: #333;
+  border-radius: 50%;
+  border: 2px solid #444;
+  position: relative;
+}
+
+.joystick::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px;
+  height: 20px;
+  background-color: #666;
+  border-radius: 50%;
+}
+
+.buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.arcade-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.arcade-button.red {
+  background-color: #ff4444;
+}
+
+.arcade-button.blue {
+  background-color: #4444ff;
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 0 0 5px var(--neon-text-color),
+                 0 0 10px var(--neon-text-color),
+                 0 0 20px var(--neon-text-color),
+                 0 0 40px var(--neon-border-color);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.7em;
+  color: #888;
+  border-top: 1px solid #444;
+  margin-top: auto;
+}
+
+.footer a {
+  color: var(--neon-text-color);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+} 

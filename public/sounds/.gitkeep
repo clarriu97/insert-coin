@@ -1,0 +1,5 @@
+# This directory will contain sound effects for the retro arcade experience
+# Example sounds needed:
+# - coin.mp3: Sound effect for inserting a coin
+# - select.mp3: Sound effect for selecting a game
+# - start.mp3: Sound effect for starting a game 

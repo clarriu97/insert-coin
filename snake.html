@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - INSERT COIN 🕹️</title>
+    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="snake.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="arcade-cabinet">
+        <header class="cabinet-header">
+            <h1 class="neon-text">SNAKE</h1>
+            <div class="game-info">
+                <div class="score">SCORE: <span id="score">0</span></div>
+                <div class="difficulty">LEVEL: <span id="difficulty">EASY</span></div>
+            </div>
+        </header>
+        
+        <main class="screen">
+            <div class="game-container">
+                <canvas id="gameCanvas"></canvas>
+                <div id="menuOverlay" class="overlay">
+                    <h2>SELECT DIFFICULTY</h2>
+                    <div class="difficulty-options">
+                        <button class="difficulty-btn selected" data-speed="150">EASY</button>
+                        <button class="difficulty-btn" data-speed="100">MEDIUM</button>
+                        <button class="difficulty-btn" data-speed="50">HARD</button>
+                    </div>
+                    <p class="instructions">PRESS SPACE TO START</p>
+                    <p class="back-option">PRESS ESC TO RETURN TO MENU</p>
+                </div>
+                <div id="gameOverOverlay" class="overlay hidden">
+                    <h2>GAME OVER</h2>
+                    <p>FINAL SCORE: <span id="finalScore">0</span></p>
+                    <p class="instructions">PRESS SPACE TO RETRY</p>
+                    <p class="back-option">PRESS ESC TO RETURN TO MENU</p>
+                </div>
+            </div>
+        </main>
+
+        <div class="cabinet-controls">
+            <div class="joystick"></div>
+            <div class="buttons">
+                <button class="arcade-button red"></button>
+                <button class="arcade-button blue"></button>
+            </div>
+        </div>
+        <footer class="footer">
+            <p>Desarrollado en su totalidad por IA bajo la dirección de clarriu97 | <a href="https://github.com/clarriu97/insert-coin" target="_blank">Ver en GitHub</a></p>
+        </footer>
+    </div>
+    <script src="snake.js"></script>
+</body>
+</html> 
