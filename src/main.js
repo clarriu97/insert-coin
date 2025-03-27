@@ -49,6 +49,6 @@ function selectGame(game) {
     // Efecto de transición
     document.body.style.opacity = '0';
     setTimeout(() => {
-        window.location.href = `${game}.html`;
+        window.location.href = `games/${game}/index.html`;
     }, 500);
 }
