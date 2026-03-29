@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake - Insert Coin Arcade</title>
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+    <link rel="stylesheet" href="snake.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="game-shell">
+        <header class="hud">
+            <h1>SNAKE</h1>
+            <div class="hud-stats">
+                <div class="stat">SCORE <span id="score">0</span></div>
+                <div class="stat">LEVEL <span id="difficulty">EASY</span></div>
+            </div>
+        </header>
+
+        <main class="playfield">
+            <div class="game-container">
+                <canvas id="gameCanvas"></canvas>
+                <div id="menuOverlay" class="overlay">
+                    <h2>SELECT DIFFICULTY</h2>
+                    <div class="difficulty-options">
+                        <button class="difficulty-btn selected" data-speed="150">EASY</button>
+                        <button class="difficulty-btn" data-speed="100">MEDIUM</button>
+                        <button class="difficulty-btn" data-speed="50">HARD</button>
+                    </div>
+                    <p class="instructions">SPACE TO START</p>
+                    <p class="back-option">ARROWS: CHOOSE LEVEL · SPACE: START</p>
+                    <p class="back-option">IN GAME: ARROWS / WASD TO MOVE</p>
+                    <p class="back-option">P TO PAUSE · ESC TO EXIT</p>
+                </div>
+                <div id="gameOverOverlay" class="overlay hidden">
+                    <h2>GAME OVER</h2>
+                    <p>FINAL SCORE: <span id="finalScore">0</span></p>
+                    <p class="instructions">SPACE TO RETRY</p>
+                    <p class="back-option">ESC TO RETURN</p>
+                </div>
+                <div id="pauseOverlay" class="overlay hidden">
+                    <h2>PAUSED</h2>
+                    <p class="instructions">PRESS P TO CONTINUE</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="snake.js"></script>
+</body>
+</html> 

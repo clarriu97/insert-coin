@@ -1,3 +1,11 @@
+function insertCoinExit() {
+    if (window.parent !== window.self) {
+        window.parent.postMessage({ type: 'INSERT_COIN_EXIT' }, '*');
+    } else {
+        window.location.href = '/';
+    }
+}
+
 class TetrisGame {
     constructor() {
         // Inicializar elementos del DOM
@@ -13,15 +21,14 @@ class TetrisGame {
         this.menuOverlay = document.getElementById('menuOverlay');
         this.gameOverOverlay = document.getElementById('gameOverOverlay');
         this.pauseOverlay = document.getElementById('pauseOverlay');
+        this.gameContainer = document.querySelector('.game-container');
+        this.sidePanel = document.querySelector('.side-panel');
 
         // Configuración del juego
         this.blockSize = 25;
         this.cols = 10;
         this.rows = 20;
-        this.canvas.width = this.blockSize * this.cols;
-        this.canvas.height = this.blockSize * this.rows;
-        this.nextCanvas.width = this.blockSize * 4;
-        this.nextCanvas.height = this.blockSize * 4;
+        this.updateCanvasSize();
 
         // Colores de las piezas (estilo retro)
         this.colors = [
@@ -47,6 +54,14 @@ class TetrisGame {
 
         this.initializeGame();
         this.setupEventListeners();
+        this.adjustLayout();
+    }
+
+    updateCanvasSize() {
+        this.canvas.width = this.blockSize * this.cols;
+        this.canvas.height = this.blockSize * this.rows;
+        this.nextCanvas.width = this.blockSize * 4;
+        this.nextCanvas.height = this.blockSize * 4;
     }
 
     initializeGame() {
@@ -103,7 +118,7 @@ class TetrisGame {
                     this.togglePause();
                     break;
                 case 'Escape':
-                    window.location.href = '../../index.html';
+                    insertCoinExit();
                     break;
                 }
             } else if (this.gameState === 'paused') {
@@ -113,15 +128,41 @@ class TetrisGame {
                     this.togglePause();
                     break;
                 case 'Escape':
-                    window.location.href = '../../index.html';
+                    insertCoinExit();
                     break;
                 }
             } else if (e.key === ' ') {
                 this.handleSpaceBar();
             } else if (e.key === 'Escape') {
-                window.location.href = '../../index.html';
+                insertCoinExit();
             }
         });
+
+        window.addEventListener('resize', () => {
+            this.adjustLayout();
+            this.draw();
+            this.drawNextPiece();
+        });
+    }
+
+    adjustLayout() {
+        if (!this.gameContainer || !this.sidePanel) return;
+
+        const containerRect = this.gameContainer.getBoundingClientRect();
+        const sidePanelRect = this.sidePanel.getBoundingClientRect();
+        const horizontalPadding = 52;
+        const verticalPadding = 24;
+
+        const availableHeight = Math.max(220, containerRect.height - verticalPadding);
+        const availableWidth = Math.max(130, containerRect.width - sidePanelRect.width - horizontalPadding);
+
+        const targetBoardHeight = Math.floor(Math.min(availableHeight, availableWidth * 2, 640));
+        const computedBlockSize = Math.max(10, Math.floor(targetBoardHeight / this.rows));
+
+        if (computedBlockSize !== this.blockSize) {
+            this.blockSize = computedBlockSize;
+            this.updateCanvasSize();
+        }
     }
 
     handleSpaceBar() {

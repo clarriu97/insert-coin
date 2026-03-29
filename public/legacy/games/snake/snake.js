@@ -1,3 +1,11 @@
+function insertCoinExit() {
+    if (window.parent !== window.self) {
+        window.parent.postMessage({ type: 'INSERT_COIN_EXIT' }, '*');
+    } else {
+        window.location.href = '/';
+    }
+}
+
 class SnakeGame {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -6,6 +14,7 @@ class SnakeGame {
         this.difficultyElement = document.getElementById('difficulty');
         this.menuOverlay = document.getElementById('menuOverlay');
         this.gameOverOverlay = document.getElementById('gameOverOverlay');
+        this.pauseOverlay = document.getElementById('pauseOverlay');
         this.finalScoreElement = document.getElementById('finalScore');
 
         // Configuración del juego
@@ -20,6 +29,10 @@ class SnakeGame {
         // Estado del juego
         this.gameState = 'menu'; // menu, playing, gameOver
         this.score = 0;
+        this.tickTimeout = null;
+
+        this.difficultyButtons = Array.from(document.querySelectorAll('.difficulty-btn'));
+        this.difficultyIndex = 0;
 
         this.initializeGame();
         this.setupEventListeners();
@@ -56,45 +69,81 @@ class SnakeGame {
                 e.preventDefault();
             }
 
+            if (this.gameState === 'menu') {
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                    this.cycleDifficulty(-1);
+                    return;
+                }
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                    this.cycleDifficulty(1);
+                    return;
+                }
+            }
+
             switch (e.key) {
             case 'ArrowUp':
-                if (this.snakeDirection.y !== 1) {
+            case 'w':
+            case 'W':
+                if (this.gameState !== 'menu' && this.snakeDirection.y !== 1) {
                     this.nextDirection = {x: 0, y: -1};
                 }
                 break;
             case 'ArrowDown':
-                if (this.snakeDirection.y !== -1) {
+            case 's':
+            case 'S':
+                if (this.gameState !== 'menu' && this.snakeDirection.y !== -1) {
                     this.nextDirection = {x: 0, y: 1};
                 }
                 break;
             case 'ArrowLeft':
-                if (this.snakeDirection.x !== 1) {
+            case 'a':
+            case 'A':
+                if (this.gameState !== 'menu' && this.snakeDirection.x !== 1) {
                     this.nextDirection = {x: -1, y: 0};
                 }
                 break;
             case 'ArrowRight':
-                if (this.snakeDirection.x !== -1) {
+            case 'd':
+            case 'D':
+                if (this.gameState !== 'menu' && this.snakeDirection.x !== -1) {
                     this.nextDirection = {x: 1, y: 0};
                 }
                 break;
             case ' ':
                 this.handleSpaceBar();
                 break;
+            case 'p':
+            case 'P':
+                this.togglePause();
+                break;
             case 'Escape':
-                window.location.href = '../../index.html';
+                insertCoinExit();
                 break;
             }
         });
 
-        // Control de dificultad
-        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+        this.difficultyButtons.forEach((btn, index) => {
             btn.addEventListener('click', () => {
-                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
-                btn.classList.add('selected');
-                this.speed = parseInt(btn.dataset.speed);
-                this.difficultyElement.textContent = btn.textContent;
+                this.setDifficultyIndex(index);
             });
         });
+    }
+
+    cycleDifficulty(delta) {
+        const n = this.difficultyButtons.length;
+        if (n === 0) return;
+        const next = (this.difficultyIndex + delta + n) % n;
+        this.setDifficultyIndex(next);
+    }
+
+    setDifficultyIndex(index) {
+        const n = this.difficultyButtons.length;
+        if (index < 0 || index >= n) return;
+        this.difficultyIndex = index;
+        this.difficultyButtons.forEach((b, i) => b.classList.toggle('selected', i === index));
+        const btn = this.difficultyButtons[index];
+        this.speed = parseInt(btn.dataset.speed, 10);
+        this.difficultyElement.textContent = btn.textContent;
     }
 
     handleSpaceBar() {
@@ -104,13 +153,31 @@ class SnakeGame {
             this.gameState = 'menu';
             this.menuOverlay.classList.remove('hidden');
             this.gameOverOverlay.classList.add('hidden');
+            this.pauseOverlay.classList.add('hidden');
             this.initializeGame();
+        }
+    }
+
+    togglePause() {
+        if (this.gameState === 'playing') {
+            this.gameState = 'paused';
+            this.pauseOverlay.classList.remove('hidden');
+            if (this.tickTimeout) {
+                clearTimeout(this.tickTimeout);
+                this.tickTimeout = null;
+            }
+        } else if (this.gameState === 'paused') {
+            this.gameState = 'playing';
+            this.pauseOverlay.classList.add('hidden');
+            this.gameLoop();
         }
     }
 
     startGame() {
         this.gameState = 'playing';
         this.menuOverlay.classList.add('hidden');
+        this.gameOverOverlay.classList.add('hidden');
+        this.pauseOverlay.classList.add('hidden');
         this.gameLoop();
     }
 
@@ -171,7 +238,7 @@ class SnakeGame {
         this.draw();
 
         // Siguiente frame
-        setTimeout(() => this.gameLoop(), this.speed);
+        this.tickTimeout = setTimeout(() => this.gameLoop(), this.speed);
     }
 
     draw() {
@@ -198,6 +265,21 @@ class SnakeGame {
             this.tileSize - 2,
             this.tileSize - 2
         );
+
+        // Rejilla tenue para mejorar lectura del tablero
+        this.ctx.strokeStyle = 'rgba(44, 229, 107, 0.08)';
+        this.ctx.lineWidth = 1;
+        for (let i = 0; i <= this.tileCount; i++) {
+            const offset = i * this.tileSize;
+            this.ctx.beginPath();
+            this.ctx.moveTo(offset, 0);
+            this.ctx.lineTo(offset, this.canvas.height);
+            this.ctx.stroke();
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, offset);
+            this.ctx.lineTo(this.canvas.width, offset);
+            this.ctx.stroke();
+        }
     }
 }
 

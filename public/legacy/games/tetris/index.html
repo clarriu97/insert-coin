@@ -3,24 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris - INSERT COIN 🕹️</title>
-    <link rel="icon" type="image/svg+xml" href="../../public/favicon.svg">
-    <link rel="stylesheet" href="../../styles.css">
+    <title>Tetris - Insert Coin Arcade</title>
+    <link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
     <link rel="stylesheet" href="tetris.css">
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="arcade-cabinet">
-        <header class="cabinet-header">
-            <h1 class="neon-text">TETRIS</h1>
+    <div class="game-shell">
+        <header class="hud">
+            <h1>TETRIS</h1>
             <div class="game-info">
-                <div class="score">SCORE: <span id="score">0</span></div>
-                <div class="level">LEVEL: <span id="level">1</span></div>
-                <div class="lines">LINES: <span id="lines">0</span></div>
+                <div class="score">SCORE <span id="score">0</span></div>
+                <div class="level">LEVEL <span id="level">1</span></div>
+                <div class="lines">LINES <span id="lines">0</span></div>
             </div>
         </header>
-        
-        <main class="screen">
+
+        <main class="playfield">
             <div class="game-container">
                 <div class="tetris-container">
                     <canvas id="gameCanvas"></canvas>
@@ -42,34 +41,22 @@
                 </div>
                 <div id="menuOverlay" class="overlay">
                     <h2>TETRIS</h2>
-                    <p class="instructions">PRESS SPACE TO START</p>
-                    <p class="back-option">PRESS ESC TO RETURN TO MENU</p>
+                    <p class="instructions">SPACE TO START</p>
+                    <p class="back-option">ESC TO RETURN</p>
                 </div>
                 <div id="gameOverOverlay" class="overlay hidden">
                     <h2>GAME OVER</h2>
                     <p>FINAL SCORE: <span id="finalScore">0</span></p>
                     <p>LINES CLEARED: <span id="finalLines">0</span></p>
-                    <p class="instructions">PRESS SPACE TO RETRY</p>
-                    <p class="back-option">PRESS ESC TO RETURN TO MENU</p>
+                    <p class="instructions">SPACE TO RETRY</p>
+                    <p class="back-option">ESC TO RETURN</p>
                 </div>
                 <div id="pauseOverlay" class="overlay hidden">
                     <h2>PAUSED</h2>
                     <p class="instructions">PRESS P TO CONTINUE</p>
-                    <p class="back-option">PRESS ESC TO RETURN TO MENU</p>
                 </div>
             </div>
         </main>
-
-        <div class="cabinet-controls">
-            <div class="joystick"></div>
-            <div class="buttons">
-                <button class="arcade-button red"></button>
-                <button class="arcade-button blue"></button>
-            </div>
-        </div>
-        <footer class="footer">
-            <p>Fully developed by AI under the direction of <a href="https://github.com/clarriu97" target="_blank">clarriu97</a> | <a href="https://github.com/clarriu97/insert-coin" target="_blank">View on GitHub</a></p>
-        </footer>
     </div>
     <script src="tetris.js"></script>
 </body>

@@ -1,14 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
     // Efecto de hover en el joystick
     const joystick = document.querySelector('.joystick');
-    
-    joystick.addEventListener('mouseover', () => {
-        joystick.style.transform = 'scale(1.1)';
-    });
-    
-    joystick.addEventListener('mouseout', () => {
-        joystick.style.transform = 'scale(1)';
-    });
+
+    if (joystick) {
+        joystick.addEventListener('mouseover', () => {
+            joystick.style.transform = 'scale(1.1)';
+        });
+
+        joystick.addEventListener('mouseout', () => {
+            joystick.style.transform = 'scale(1)';
+        });
+    }
 
     // Efecto de presionar botones arcade
     const buttons = document.querySelectorAll('.arcade-button');
