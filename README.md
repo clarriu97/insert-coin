@@ -36,7 +36,8 @@ A retro-themed web arcade where you can play classic retro games.
 
 ## 🛠️ Tech Stack
 
-- Vanilla JavaScript
+- React + React Router
+- Vite
 - HTML5 Canvas
 - CSS3 with custom properties
 - Responsive Design
@@ -51,13 +52,10 @@ A retro-themed web arcade where you can play classic retro games.
    cd insert-coin
    ```
 
-2. Open `index.html` in your browser or use a local server:
+2. Install dependencies and run in development:
    ```bash
-   # Using Python
-   python -m http.server 8000
-   
-   # Using Node.js
-   npx serve
+   pnpm install
+   pnpm dev
    ```
 
 3. Start playing! 🎮
@@ -67,21 +65,37 @@ A retro-themed web arcade where you can play classic retro games.
 ```
 insert-coin/
 ├─ src/
-│  ├─ index.html      # Main entry point
-│  ├─ styles.css      # Global styles
-│  ├─ main.js         # Main JavaScript
-│  └─ games/          # Game implementations
-│     ├─ snake/       # Snake game files
-│     └─ tetris/      # Tetris game files
+│  ├─ main.jsx        # React entry
+│  ├─ App.jsx         # Router setup
+│  ├─ views/          # Main app views
+│  └─ styles.css      # Global styles
+├─ public/legacy/     # Legacy Snake/Tetris pages
 └─ public/            # Static assets
 ```
 
 ## 🔄 Development
 
-The project uses GitHub Actions for continuous deployment to GitHub Pages. Any push to the main branch will trigger:
-1. Code validation
-2. Build process
-3. Automatic deployment
+CI/CD (`.github/workflows/deploy.yml`) runs on every push to `main` or `master`:
+
+1. `pnpm install --frozen-lockfile`
+2. `pnpm run lint`
+3. `pnpm run build` with `VITE_BASE_PATH` set to `/<repository-name>/` (correct asset URLs on GitHub Pages)
+
+For **this** repository (`clarriu97/insert-coin`), GitHub sets that to **`/insert-coin/`**, which matches the live site:
+
+**https://clarriu97.github.io/insert-coin/**
+
+Routing uses hash URLs (`/#/`, `/#/snake`, `/#/tetris`) so refreshes work on static hosting.
+
+The built site is uploaded from the `dist/` folder via **GitHub Actions** Pages deployment.
+
+**Repository settings:** In GitHub → *Settings* → *Pages*, set **Source** to **GitHub Actions** (not “Deploy from a branch”). The first run may require approving the `github-pages` environment if your org uses deployment protection.
+
+**Local production build check** (same as CI for this repo):
+
+```bash
+VITE_BASE_PATH=/insert-coin/ pnpm run build
+```
 
 ## 🎯 Upcoming Features
 
