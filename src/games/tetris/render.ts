@@ -15,8 +15,12 @@ export const SCREEN = { width: 160, height: BOARD_HEIGHT + MARGIN * 2 };
 
 const FONT = '8px "Press Start 2P", monospace';
 
+const colorCache = new WeakMap<Palette, Readonly<Record<PieceKind, string>>>();
+
 function pieceColors(palette: Palette): Readonly<Record<PieceKind, string>> {
-    return {
+    const cached = colorCache.get(palette);
+    if (cached) return cached;
+    const colors = {
         I: palette.secondary,
         J: palette.blue,
         L: palette.orange,
@@ -25,6 +29,8 @@ function pieceColors(palette: Palette): Readonly<Record<PieceKind, string>> {
         T: palette.danger,
         Z: palette.accent
     };
+    colorCache.set(palette, colors);
+    return colors;
 }
 
 function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, palette: Palette) {

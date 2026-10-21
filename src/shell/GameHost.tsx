@@ -12,6 +12,7 @@ import type { Button, GameDefinition, GameStatus, Screen } from '../engine/types
 import type { GameEntry } from '../games/registry.ts';
 import { GameCabinet } from './GameCabinet.tsx';
 import { GameOverlay } from './GameOverlay.tsx';
+import { pixelScale } from './pixel-scale.ts';
 import { TouchControls } from './TouchControls.tsx';
 
 interface GameHostProps {
@@ -221,8 +222,7 @@ function usePixelScale(ref: RefObject<HTMLElement | null>, screen: Screen): numb
         const observer = new ResizeObserver(([entry]) => {
             if (!entry) return;
             const { width, height } = entry.contentRect;
-            const fit = Math.min(width / screen.width, height / screen.height);
-            setScale(fit >= 1 ? Math.floor(fit * 4) / 4 : fit);
+            setScale(pixelScale(Math.min(width / screen.width, height / screen.height), window.devicePixelRatio || 1));
         });
         observer.observe(element);
         return () => observer.disconnect();
