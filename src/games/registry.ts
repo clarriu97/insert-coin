@@ -25,6 +25,13 @@ export const GAMES: GameEntry[] = [
         load: () => import('./tetris/index.ts').then((module) => module.tetris)
     },
     {
+        id: 'invaders',
+        title: 'INVADERS',
+        cover: 'games/invaders.svg',
+        players: '1 PLAYER',
+        load: () => import('./invaders/index.ts').then((module) => module.invaders)
+    },
+    {
         id: 'demo',
         title: 'TEST PATTERN',
         cover: 'favicon.svg',
