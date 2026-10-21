@@ -1,6 +1,6 @@
 import type { Rng } from './rng.ts';
 
-export type Button = 'up' | 'down' | 'left' | 'right' | 'action' | 'secondary' | 'pause' | 'back' | 'start';
+export type Button = 'up' | 'down' | 'left' | 'right' | 'action' | 'secondary' | 'tertiary' | 'pause' | 'back' | 'start';
 
 export interface InputFrame {
     held: ReadonlySet<Button>;
