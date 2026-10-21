@@ -137,6 +137,7 @@ export function status(state: SnakeState): GameStatus {
     return {
         score: state.score,
         over: state.mode === 'won' || state.mode === 'dead',
+        won: state.mode === 'won',
         hud: [
             { label: 'SCORE', value: state.score },
             { label: 'LENGTH', value: state.snake.length },

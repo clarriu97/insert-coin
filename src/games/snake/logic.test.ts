@@ -41,6 +41,7 @@ describe('snake logic', () => {
         expect(status(state)).toEqual({
             score: 0,
             over: false,
+            won: false,
             hud: [
                 { label: 'SCORE', value: 0 },
                 { label: 'LENGTH', value: 3 },
@@ -175,7 +176,7 @@ describe('snake logic', () => {
         expect(won.mode).toBe('won');
         expect(won.food).toBeNull();
         expect(won.snake).toHaveLength(GRID * GRID);
-        expect(status(won).over).toBe(true);
+        expect(status(won)).toMatchObject({ over: true, won: true });
     });
 
     it('is deterministic for a given seed', () => {

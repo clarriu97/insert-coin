@@ -66,7 +66,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
 
         const publish = () => {
             const status = definition.status(session.state);
-            const key = `${session.phase}|${status.score}|${status.hud.map((field) => field.value).join('|')}`;
+            const key = `${session.phase}|${status.score}|${status.won}|${status.hud.map((field) => field.value).join('|')}`;
             if (key !== published) {
                 published = key;
                 setView({ phase: session.phase, status });
@@ -121,7 +121,12 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                     style={{ width: width * scale, height: height * scale }}
                     aria-label={`${definition.title} game screen`}
                 />
-                <Overlay phase={view.phase} definition={definition} score={view.status?.score ?? 0} />
+                <Overlay
+                    phase={view.phase}
+                    definition={definition}
+                    score={view.status?.score ?? 0}
+                    won={view.status?.won === true}
+                />
             </div>
         </div>
     );
@@ -131,9 +136,10 @@ interface OverlayProps {
     phase: Phase;
     definition: GameDefinition<unknown>;
     score: number;
+    won: boolean;
 }
 
-function Overlay({ phase, definition, score }: OverlayProps) {
+function Overlay({ phase, definition, score, won }: OverlayProps) {
     if (phase === 'playing') return null;
     return (
         <div className="host-overlay" role="dialog" aria-label={phase}>
@@ -156,7 +162,7 @@ function Overlay({ phase, definition, score }: OverlayProps) {
             )}
             {phase === 'over' && (
                 <>
-                    <h2>GAME OVER</h2>
+                    <h2>{won ? 'YOU WIN' : 'GAME OVER'}</h2>
                     <p>SCORE {score}</p>
                     <p className="blink">PRESS ENTER TO PLAY AGAIN</p>
                 </>
