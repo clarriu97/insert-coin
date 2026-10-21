@@ -38,4 +38,7 @@ check-fast: lint typecheck
 
 check-task: check-fast test
 
-check-full: check-fast coverage e2e
+bundle-size:
+    node scripts/check-bundle.mjs
+
+check-full: check-fast coverage e2e bundle-size

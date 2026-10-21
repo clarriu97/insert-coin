@@ -11,7 +11,7 @@ interface CabinetProps {
 
 export function Cabinet({ tag, title, screenLabel, bezelNote, panel, children }: CabinetProps) {
     return (
-        <div className="arcade-room">
+        <main className="arcade-room">
             <div className="cabinet">
                 <header className="marquee">
                     <p className="marquee-tag">{tag}</p>
@@ -36,6 +36,6 @@ export function Cabinet({ tag, title, screenLabel, bezelNote, panel, children }:
                     </div>
                 </section>
             </div>
-        </div>
+        </main>
     );
 }
