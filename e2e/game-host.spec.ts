@@ -88,6 +88,7 @@ test('high scores persist and only qualifying scores ask for initials', async ({
     await page.reload();
     await expect(page.getByRole('dialog', { name: 'ready' })).toBeVisible();
     await page.keyboard.press('Enter');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.locator('.host-hud-field', { hasText: 'HI' }).locator('dd')).toHaveText('20');
 
     await page.keyboard.press('KeyZ');
