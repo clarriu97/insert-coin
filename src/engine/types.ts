@@ -33,6 +33,9 @@ export interface Palette {
     muted: string;
     primary: string;
     secondary: string;
+    orange: string;
+    blue: string;
+    yellow: string;
 }
 
 export interface Screen {

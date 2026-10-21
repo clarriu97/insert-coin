@@ -7,5 +7,8 @@ export const DEFAULT_PALETTE: Palette = {
     danger: '#ff4f8b',
     muted: '#8d8a9a',
     primary: '#58ff7a',
-    secondary: '#44e0ff'
+    secondary: '#44e0ff',
+    orange: '#ff7a33',
+    blue: '#6f8cff',
+    yellow: '#ffe066'
 };

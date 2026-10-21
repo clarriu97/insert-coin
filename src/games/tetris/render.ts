@@ -13,24 +13,36 @@ const PREVIEW_SLOT = 3 * CELL;
 
 export const SCREEN = { width: 160, height: BOARD_HEIGHT + MARGIN * 2 };
 
-const PIECE_COLORS: Readonly<Record<PieceKind, string>> = {
-    I: '#3fd8f0',
-    J: '#4f7dff',
-    L: '#ffa040',
-    O: '#ffe566',
-    S: '#5fe07a',
-    T: '#b46cff',
-    Z: '#ff5a5a'
-};
+const FONT = '8px "Press Start 2P", monospace';
 
-function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string) {
-    ctx.fillStyle = color;
-    ctx.fillRect(x, y, CELL - 1, CELL - 1);
+function pieceColors(palette: Palette): Readonly<Record<PieceKind, string>> {
+    return {
+        I: palette.secondary,
+        J: palette.blue,
+        L: palette.orange,
+        O: palette.yellow,
+        S: palette.primary,
+        T: palette.danger,
+        Z: palette.accent
+    };
 }
 
-function drawBoardCell(ctx: CanvasRenderingContext2D, column: number, row: number, color: string) {
+function drawCell(ctx: CanvasRenderingContext2D, x: number, y: number, color: string, palette: Palette) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, CELL - 1, CELL - 1);
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = palette.foreground;
+    ctx.fillRect(x, y, CELL - 1, 1);
+    ctx.fillRect(x, y, 1, CELL - 1);
+    ctx.fillStyle = palette.background;
+    ctx.fillRect(x + 1, y + CELL - 2, CELL - 2, 1);
+    ctx.fillRect(x + CELL - 2, y + 1, 1, CELL - 2);
+    ctx.globalAlpha = 1;
+}
+
+function drawBoardCell(ctx: CanvasRenderingContext2D, column: number, row: number, color: string, palette: Palette) {
     if (row < HIDDEN_ROWS) return;
-    drawCell(ctx, MARGIN + column * CELL, MARGIN + (row - HIDDEN_ROWS) * CELL, color);
+    drawCell(ctx, MARGIN + column * CELL, MARGIN + (row - HIDDEN_ROWS) * CELL, color, palette);
 }
 
 function drawGhostCell(ctx: CanvasRenderingContext2D, column: number, row: number, color: string) {
@@ -40,20 +52,21 @@ function drawGhostCell(ctx: CanvasRenderingContext2D, column: number, row: numbe
     ctx.strokeRect(MARGIN + column * CELL + 0.5, MARGIN + (row - HIDDEN_ROWS) * CELL + 0.5, CELL - 2, CELL - 2);
 }
 
-function drawPreview(ctx: CanvasRenderingContext2D, kind: PieceKind, x: number, y: number, color: string) {
+function drawPreview(ctx: CanvasRenderingContext2D, kind: PieceKind, x: number, y: number, color: string, palette: Palette) {
     for (const [dx, dy] of cells(kind, 0)) {
-        drawCell(ctx, x + dx * CELL, y + dy * CELL, color);
+        drawCell(ctx, x + dx * CELL, y + dy * CELL, color, palette);
     }
 }
 
 function drawLabel(ctx: CanvasRenderingContext2D, text: string, y: number, palette: Palette) {
     ctx.fillStyle = palette.muted;
-    ctx.font = '8px monospace';
+    ctx.font = FONT;
     ctx.textBaseline = 'top';
     ctx.fillText(text, PANEL_X, y);
 }
 
 export function render(ctx: CanvasRenderingContext2D, state: TetrisState, palette: Palette) {
+    const colors = pieceColors(palette);
     ctx.fillStyle = palette.background;
     ctx.fillRect(0, 0, SCREEN.width, SCREEN.height);
     ctx.fillStyle = palette.muted;
@@ -62,25 +75,25 @@ export function render(ctx: CanvasRenderingContext2D, state: TetrisState, palett
     ctx.fillRect(MARGIN, MARGIN, BOARD_WIDTH - 1, BOARD_HEIGHT - 1);
 
     state.board.forEach((row, y) => row.forEach((cell, x) => {
-        if (cell) drawBoardCell(ctx, x, y, PIECE_COLORS[cell]);
+        if (cell) drawBoardCell(ctx, x, y, colors[cell], palette);
     }));
-    const color = PIECE_COLORS[state.active.kind];
+    const color = colors[state.active.kind];
     for (const [x, y] of pieceCells(ghost(state))) {
         drawGhostCell(ctx, x, y, color);
     }
     for (const [x, y] of pieceCells(state.active)) {
-        drawBoardCell(ctx, x, y, color);
+        drawBoardCell(ctx, x, y, color, palette);
     }
 
     drawLabel(ctx, 'NEXT', MARGIN, palette);
     state.queue.slice(0, NEXT_COUNT).forEach((kind, index) => {
-        drawPreview(ctx, kind, PANEL_X, MARGIN + LABEL_GAP + index * PREVIEW_SLOT, PIECE_COLORS[kind]);
+        drawPreview(ctx, kind, PANEL_X, MARGIN + LABEL_GAP + index * PREVIEW_SLOT, colors[kind], palette);
     });
 
     const holdY = MARGIN + LABEL_GAP + NEXT_COUNT * PREVIEW_SLOT + MARGIN;
     drawLabel(ctx, 'HOLD', holdY, palette);
     if (state.hold) {
-        const holdColor = state.holdUsed ? palette.muted : PIECE_COLORS[state.hold];
-        drawPreview(ctx, state.hold, PANEL_X, holdY + LABEL_GAP, holdColor);
+        const holdColor = state.holdUsed ? palette.muted : colors[state.hold];
+        drawPreview(ctx, state.hold, PANEL_X, holdY + LABEL_GAP, holdColor, palette);
     }
 }
