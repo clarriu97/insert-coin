@@ -6,6 +6,8 @@ import {
     createAudio,
     EFFECTS,
     MASTER_VOLUME,
+    MAX_VOICES,
+    RETRIGGER_MS,
     type AudioContextLike,
     type SoundName
 } from './audio.ts';
@@ -26,19 +28,22 @@ function fakeParam() {
         value: 0,
         calls,
         setValueAtTime: record('set'),
-        exponentialRampToValueAtTime: record('ramp')
+        exponentialRampToValueAtTime: record('ramp'),
+        setTargetAtTime: record('target')
     };
 }
 
 function fakeNode() {
-    return { connect: vi.fn() };
+    return { connect: vi.fn(), disconnect: vi.fn() };
 }
 
-function fakeContext(state: AudioContextState = 'suspended') {
-    const oscillators: { type: string; frequency: ReturnType<typeof fakeParam>; start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn> }[] = [];
-    const gains: { gain: ReturnType<typeof fakeParam>; connect: ReturnType<typeof vi.fn> }[] = [];
+type Ending = { onended: (() => void) | null };
+
+function fakeContext(state: AudioContextState = 'running') {
+    const oscillators: (Ending & { type: string; frequency: ReturnType<typeof fakeParam>; start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn>; disconnect: ReturnType<typeof vi.fn> })[] = [];
+    const gains: { gain: ReturnType<typeof fakeParam>; connect: ReturnType<typeof vi.fn>; disconnect: ReturnType<typeof vi.fn> }[] = [];
     const filters: { type: string; frequency: ReturnType<typeof fakeParam> }[] = [];
-    const sources: { buffer: unknown; loop: boolean; start: ReturnType<typeof vi.fn> }[] = [];
+    const sources: (Ending & { buffer: unknown; loop: boolean; start: ReturnType<typeof vi.fn> })[] = [];
     const buffers: Float32Array[] = [];
     const context = {
         currentTime: 2,
@@ -52,7 +57,7 @@ function fakeContext(state: AudioContextState = 'suspended') {
             return gain;
         },
         createOscillator() {
-            const oscillator = { ...fakeNode(), type: 'sine', frequency: fakeParam(), start: vi.fn(), stop: vi.fn() };
+            const oscillator = { ...fakeNode(), type: 'sine', frequency: fakeParam(), start: vi.fn(), stop: vi.fn(), onended: null };
             oscillators.push(oscillator);
             return oscillator;
         },
@@ -62,7 +67,7 @@ function fakeContext(state: AudioContextState = 'suspended') {
             return { getChannelData: () => samples };
         },
         createBufferSource() {
-            const source = { ...fakeNode(), buffer: null, loop: false, start: vi.fn(), stop: vi.fn() };
+            const source = { ...fakeNode(), buffer: null, loop: false, start: vi.fn(), stop: vi.fn(), onended: null };
             sources.push(source);
             return source;
         },
@@ -190,8 +195,65 @@ describe('createAudio', () => {
         const fake = fakeContext();
         const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
         const names = Object.keys(EFFECTS) as SoundName[];
-        names.forEach((name) => audio.play(name));
+        names.forEach((name) => {
+            audio.play(name);
+            [...fake.oscillators, ...fake.sources].forEach((voice) => voice.onended?.());
+        });
         expect(fake.oscillators.length + fake.sources.length).toBe(names.length);
+    });
+
+    it('does not schedule sounds until the context is running', () => {
+        const fake = fakeContext('suspended');
+        const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
+        audio.play('coin');
+        expect(fake.raw.resume).toHaveBeenCalledTimes(1);
+        expect(fake.oscillators).toHaveLength(0);
+    });
+
+    it('resumes an interrupted context', () => {
+        const fake = fakeContext('interrupted' as AudioContextState);
+        const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
+        audio.unlock();
+        expect(fake.raw.resume).toHaveBeenCalledTimes(1);
+    });
+
+    it('throttles retriggers of the same sound', () => {
+        const fake = fakeContext();
+        const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
+        audio.play('move');
+        audio.play('move');
+        expect(fake.oscillators).toHaveLength(1);
+        fake.raw.currentTime += RETRIGGER_MS / 1000;
+        audio.play('move');
+        expect(fake.oscillators).toHaveLength(2);
+    });
+
+    it('caps concurrent voices and frees them when they end', () => {
+        const fake = fakeContext();
+        const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
+        const names = (Object.keys(EFFECTS) as SoundName[]).filter((name) => EFFECTS[name].wave !== 'noise');
+        names.forEach((name) => audio.play(name));
+        expect(fake.oscillators).toHaveLength(MAX_VOICES);
+
+        const [first] = fake.oscillators;
+        first?.onended?.();
+        expect(first?.disconnect).toHaveBeenCalled();
+        expect(fake.gains[1]?.disconnect).toHaveBeenCalled();
+        fake.raw.currentTime += 1;
+        audio.play('coin');
+        expect(fake.oscillators).toHaveLength(MAX_VOICES + 1);
+    });
+
+    it('fades the master gain out and back in when muting', () => {
+        const fake = fakeContext();
+        const audio = createAudio({ createContext: () => fake.context, storage: memoryStorage() });
+        audio.unlock();
+        audio.setMuted(true);
+        audio.setMuted(false);
+        expect(fake.gains[0]?.gain.calls.map((call) => [call.method, call.value])).toEqual([
+            ['target', 0],
+            ['target', MASTER_VOLUME]
+        ]);
     });
 
     it('is silent when muted', () => {

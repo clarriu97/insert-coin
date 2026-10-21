@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { createRng } from './rng.ts';
-import { advanceSession, createSession, pauseSession, RESTART_LOCKOUT_MS, type Session } from './session.ts';
+import { advanceSession, createSession, pauseSession, RESTART_LOCKOUT_MS, sessionSounds, type Session } from './session.ts';
 import type { Button, GameDefinition, InputFrame } from './types.ts';
 
 interface CounterState {
@@ -80,5 +80,40 @@ describe('session', () => {
         expect(pauseSession(at('playing')).phase).toBe('paused');
         const ready = at('ready');
         expect(pauseSession(ready)).toBe(ready);
+    });
+});
+
+describe('sessionSounds', () => {
+    const noisy: GameDefinition<CounterState> = {
+        ...counter,
+        sounds: (_previous, next) => (next.ticks % 2 === 0 ? ['shoot'] : [])
+    };
+
+    it('plays the game sounds while playing and start when play begins', () => {
+        expect(sessionSounds(noisy, at('playing', 3), at('playing', 4))).toEqual(['shoot']);
+        expect(sessionSounds(noisy, at('ready'), at('playing'))).toEqual(['start']);
+        expect(sessionSounds(noisy, at('over'), at('playing', 0))).toEqual(['start']);
+        expect(sessionSounds(counter, at('paused'), at('playing'))).toEqual([]);
+    });
+
+    it('ignores unchanged state', () => {
+        const session = at('playing', 4);
+        expect(sessionSounds(noisy, session, session)).toEqual([]);
+    });
+
+    it('adds a die sound on game over even when the game played something else', () => {
+        const over: Session<CounterState> = { phase: 'over', phaseMs: 0, state: { ticks: 4, over: true } };
+        expect(sessionSounds(noisy, at('playing', 3), over)).toEqual(['shoot', 'die']);
+    });
+
+    it('plays win for a won game and nothing extra when the game already ended it', () => {
+        const winner: GameDefinition<CounterState> = {
+            ...counter,
+            status: (state) => ({ score: state.ticks, over: state.over, won: true, hud: [] })
+        };
+        const over: Session<CounterState> = { phase: 'over', phaseMs: 0, state: { ticks: 5, over: true } };
+        expect(sessionSounds(winner, at('playing', 4), over)).toEqual(['win']);
+        const ending: GameDefinition<CounterState> = { ...counter, sounds: () => ['die'] };
+        expect(sessionSounds(ending, at('playing', 4), over)).toEqual(['die']);
     });
 });
