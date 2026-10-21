@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router';
 import { DEFAULT_PALETTE } from '../design/palette.ts';
-import { appAudio, type SoundName } from '../engine/audio.ts';
+import { appAudio } from '../engine/audio.ts';
 import { createHighScoreStore, type HighScore } from '../engine/highscores.ts';
 import { createEntry, entryText, updateEntry, type InitialsEntry } from '../engine/initials.ts';
 import { createInput, type Input } from '../engine/input.ts';
 import { createLoop } from '../engine/loop.ts';
 import { createRng, randomSeed } from '../engine/rng.ts';
-import { advanceSession, createSession, pauseSession, type Phase } from '../engine/session.ts';
+import { advanceSession, createSession, pauseSession, sessionSounds, type Phase } from '../engine/session.ts';
 import type { Button, GameDefinition, GameStatus, Screen } from '../engine/types.ts';
 import type { GameEntry } from '../games/registry.ts';
 import { GameCabinet } from './GameCabinet.tsx';
@@ -137,15 +137,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                     return;
                 }
                 const previousPhase = previous.phase;
-                const effects: SoundName[] = previousPhase === 'playing' && session.state !== previous.state
-                    ? [...(definition.sounds?.(previous.state, session.state) ?? [])]
-                    : [];
-                if (session.phase === 'playing' && (previousPhase === 'ready' || previousPhase === 'over')) {
-                    effects.push('start');
-                }
-                if (session.phase === 'over' && previousPhase !== 'over' && effects.length === 0) {
-                    effects.push('die');
-                }
+                const effects = sessionSounds(definition, previous, session);
                 effects.forEach((effect) => audio.play(effect));
                 if (session.phase === 'over' && previousPhase !== 'over') {
                     enterGameOver();

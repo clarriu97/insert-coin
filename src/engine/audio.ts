@@ -4,6 +4,9 @@ export const AUDIO_STORAGE_KEY = 'insert-coin:audio:v1';
 export const MASTER_VOLUME = 0.12;
 
 const ATTACK_S = 0.005;
+const MUTE_FADE_S = 0.015;
+export const MAX_VOICES = 8;
+export const RETRIGGER_MS = 60;
 const SILENCE = 0.0001;
 const NOISE_SECONDS = 1;
 
@@ -79,6 +82,7 @@ export interface AudioPlayer {
 interface Voice {
     source: AudioScheduledSourceNode;
     frequency: AudioParam;
+    nodes: AudioNode[];
 }
 
 export function browserAudioContext(): AudioContextLike | null {
@@ -119,14 +123,14 @@ function noiseVoice(ctx: AudioContextLike, buffer: AudioBuffer, output: AudioNod
     filter.type = 'lowpass';
     source.connect(filter);
     filter.connect(output);
-    return { source, frequency: filter.frequency };
+    return { source, frequency: filter.frequency, nodes: [source, filter] };
 }
 
 function toneVoice(ctx: AudioContextLike, wave: OscillatorType, output: AudioNode): Voice {
     const oscillator = ctx.createOscillator();
     oscillator.type = wave;
     oscillator.connect(output);
-    return { source: oscillator, frequency: oscillator.frequency };
+    return { source: oscillator, frequency: oscillator.frequency, nodes: [oscillator] };
 }
 
 function setPitch(frequency: AudioParam, { notes, glide }: Effect, start: number, duration: number) {
@@ -149,6 +153,8 @@ export function createAudio({
     let master: GainNode | null = null;
     let noise: AudioBuffer | null = null;
     let unavailable = false;
+    let voices = 0;
+    const lastPlayedMs = new Map<SoundName, number>();
     const listeners = new Set<() => void>();
 
     const context = (): AudioContextLike | null => {
@@ -163,15 +169,24 @@ export function createAudio({
             return null;
         }
         master = ctx.createGain();
-        master.gain.value = MASTER_VOLUME;
+        master.gain.value = muted ? 0 : MASTER_VOLUME;
         master.connect(ctx.destination);
         return ctx;
     };
 
     const resume = (active: AudioContextLike) => {
-        if (active.state === 'suspended') {
+        const state: string = active.state;
+        if (state === 'suspended' || state === 'interrupted') {
             active.resume().catch(() => undefined);
         }
+    };
+
+    const canPlay = (active: AudioContextLike, name: SoundName) => {
+        const nowMs = active.currentTime * 1000;
+        const last = lastPlayedMs.get(name);
+        if (voices >= MAX_VOICES || (last !== undefined && nowMs - last < RETRIGGER_MS)) return false;
+        lastPlayedMs.set(name, nowMs);
+        return true;
     };
 
     const schedule = (active: AudioContextLike, output: AudioNode, effect: Effect) => {
@@ -187,6 +202,11 @@ export function createAudio({
             ? noiseVoice(active, (noise ??= noiseBuffer(active)), envelope)
             : toneVoice(active, effect.wave, envelope);
         setPitch(voice.frequency, effect, start, duration);
+        voices++;
+        voice.source.onended = () => {
+            voices--;
+            [...voice.nodes, envelope].forEach((node) => node.disconnect());
+        };
         voice.source.start(start);
         voice.source.stop(end);
     };
@@ -195,6 +215,9 @@ export function createAudio({
         if (next === muted) return;
         muted = next;
         writeMuted(storage, muted);
+        if (ctx && master) {
+            master.gain.setTargetAtTime(muted ? 0 : MASTER_VOLUME, ctx.currentTime, MUTE_FADE_S);
+        }
         listeners.forEach((listener) => listener());
     };
 
@@ -220,6 +243,7 @@ export function createAudio({
             const active = context();
             if (!active || !master) return;
             resume(active);
+            if (active.state !== 'running' || !canPlay(active, name)) return;
             schedule(active, master, EFFECTS[name]);
         }
     };

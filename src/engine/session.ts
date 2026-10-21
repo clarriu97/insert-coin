@@ -1,3 +1,4 @@
+import type { SoundName } from './audio.ts';
 import type { Rng } from './rng.ts';
 import type { GameDefinition, InputFrame } from './types.ts';
 
@@ -64,4 +65,19 @@ export function advanceSession<S>(
             : { session: { phase: 'playing', phaseMs: session.phaseMs + dtMs, state }, exit: false };
     }
     }
+}
+
+const ENDING_SOUNDS: SoundName[] = ['die', 'win'];
+
+export function sessionSounds<S>(definition: GameDefinition<S>, previous: Session<S>, next: Session<S>): SoundName[] {
+    const effects = previous.phase === 'playing' && next.state !== previous.state
+        ? [...(definition.sounds?.(previous.state, next.state) ?? [])]
+        : [];
+    if (next.phase === 'playing' && (previous.phase === 'ready' || previous.phase === 'over')) {
+        effects.push('start');
+    }
+    if (next.phase === 'over' && previous.phase !== 'over' && !effects.some((effect) => ENDING_SOUNDS.includes(effect))) {
+        effects.push(definition.status(next.state).won ? 'win' : 'die');
+    }
+    return effects;
 }
