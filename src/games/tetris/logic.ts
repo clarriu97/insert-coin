@@ -7,10 +7,18 @@ export const VISIBLE_ROWS = 20;
 export const HIDDEN_ROWS = 2;
 export const ROWS = VISIBLE_ROWS + HIDDEN_ROWS;
 export const SOFT_DROP_MS = 50;
+export const LOCK_DELAY_MS = 500;
+export const MAX_LOCK_RESETS = 15;
+export const DAS_MS = 170;
+export const ARR_MS = 50;
 export const LINES_PER_LEVEL = 10;
 const SEED_RANGE = 4294967296;
 const MIN_QUEUE = 7;
 const LINE_POINTS = [0, 100, 300, 500, 800];
+
+type Direction = 'left' | 'right';
+const DIRECTIONS: readonly Direction[] = ['left', 'right'];
+const DIRECTION_DX: Readonly<Record<Direction, number>> = { left: -1, right: 1 };
 
 export type Cell = PieceKind | null;
 export type Board = Cell[][];
@@ -27,7 +35,14 @@ export interface TetrisState {
     active: Piece;
     queue: PieceKind[];
     seed: number;
+    hold: PieceKind | null;
+    holdUsed: boolean;
     gravityMs: number;
+    lockMs: number;
+    lockResets: number;
+    lowestY: number;
+    shiftDirection: Direction | null;
+    shiftMs: number;
     score: number;
     level: number;
     lines: number;
@@ -82,27 +97,47 @@ function moved(board: Board, piece: Piece, dx: number, dy: number): Piece | null
     return fits(board, candidate) ? candidate : null;
 }
 
-function spawn(state: TetrisState): TetrisState {
-    const [kind, ...rest] = state.queue;
-    if (!kind) return state;
-    const { queue, seed } = refill(rest, state.seed);
+function grounded(state: TetrisState): boolean {
+    return moved(state.board, state.active, 0, 1) === null;
+}
+
+export function ghost(state: TetrisState): Piece {
+    let piece = state.active;
+    for (let next = moved(state.board, piece, 0, 1); next; next = moved(state.board, piece, 0, 1)) {
+        piece = next;
+    }
+    return piece;
+}
+
+function place(state: TetrisState, kind: PieceKind): TetrisState {
     const placed: Piece = { kind, rotation: 0, x: spawnColumn(kind), y: 0 };
     if (!fits(state.board, placed)) {
-        return { ...state, queue, seed, over: true };
+        return { ...state, over: true };
     }
     const active = moved(state.board, placed, 0, 1) ?? placed;
-    return { ...state, active, queue, seed, gravityMs: 0 };
+    return { ...state, active, gravityMs: 0, lockMs: 0, lockResets: 0, lowestY: active.y };
+}
+
+function spawn(state: TetrisState): TetrisState {
+    const [kind, ...rest] = state.queue as [PieceKind, ...PieceKind[]];
+    return place({ ...state, ...refill(rest, state.seed) }, kind);
 }
 
 export function create(rng: Rng): TetrisState {
     const { queue, seed } = refill([], rng.int(SEED_RANGE));
-    const placeholder: Piece = { kind: 'O', rotation: 0, x: 0, y: 0 };
     return spawn({
         board: emptyBoard(),
-        active: placeholder,
+        active: { kind: 'O', rotation: 0, x: 0, y: 0 },
         queue,
         seed,
+        hold: null,
+        holdUsed: false,
         gravityMs: 0,
+        lockMs: 0,
+        lockResets: 0,
+        lowestY: 0,
+        shiftDirection: null,
+        shiftMs: 0,
         score: 0,
         level: 1,
         lines: 0,
@@ -127,32 +162,81 @@ function lock(state: TetrisState): TetrisState {
     return spawn({
         ...state,
         board: clearedBoard,
+        holdUsed: false,
         lines,
         level: Math.floor(lines / LINES_PER_LEVEL) + 1,
         score: state.score + (LINE_POINTS[cleared] ?? 0) * state.level
     });
 }
 
-function shift(state: TetrisState, pressed: InputFrame['pressed']): TetrisState {
-    const dx = (pressed.has('right') ? 1 : 0) - (pressed.has('left') ? 1 : 0);
-    const active = dx === 0 ? null : moved(state.board, state.active, dx, 0);
-    return active ? { ...state, active } : state;
+function reposition(state: TetrisState, active: Piece): TetrisState {
+    if (!grounded(state) || state.lockResets >= MAX_LOCK_RESETS) {
+        return { ...state, active };
+    }
+    return { ...state, active, lockMs: 0, lockResets: state.lockResets + 1 };
+}
+
+function shiftBy(state: TetrisState, direction: Direction, count: number): TetrisState {
+    let next = state;
+    for (let index = 0; index < count; index++) {
+        const active = moved(next.board, next.active, DIRECTION_DX[direction], 0);
+        if (!active) break;
+        next = reposition(next, active);
+    }
+    return next;
+}
+
+function autoShifts(heldMs: number): number {
+    return heldMs < DAS_MS ? 0 : Math.floor((heldMs - DAS_MS) / ARR_MS) + 1;
+}
+
+function shift(state: TetrisState, { pressed, held }: InputFrame, dtMs: number): TetrisState {
+    const fresh = DIRECTIONS.find((direction) => pressed.has(direction));
+    if (fresh) {
+        const shiftDirection = held.has(fresh) ? fresh : null;
+        return { ...shiftBy(state, fresh, 1), shiftDirection, shiftMs: 0 };
+    }
+    const direction = state.shiftDirection;
+    if (!direction || !held.has(direction)) {
+        return { ...state, shiftDirection: null, shiftMs: 0 };
+    }
+    const shiftMs = state.shiftMs + dtMs;
+    return { ...shiftBy(state, direction, autoShifts(shiftMs) - autoShifts(state.shiftMs)), shiftMs };
 }
 
 function turn(state: TetrisState, pressed: InputFrame['pressed']): TetrisState {
     const direction = (pressed.has('up') ? 1 : 0) - (pressed.has('secondary') ? 1 : 0);
     const active = direction === 0 ? null : rotate(state.board, state.active, direction as 1 | -1);
-    return active ? { ...state, active } : state;
+    return active ? reposition(state, active) : state;
+}
+
+function swapHold(state: TetrisState): TetrisState {
+    if (state.holdUsed) return state;
+    const swapped = { ...state, hold: state.active.kind, holdUsed: true };
+    return state.hold ? place(swapped, state.hold) : spawn(swapped);
 }
 
 function hardDrop(state: TetrisState): TetrisState {
-    let active = state.active;
-    let distance = 0;
-    for (let next = moved(state.board, active, 0, 1); next; next = moved(state.board, active, 0, 1)) {
-        active = next;
-        distance++;
-    }
-    return lock({ ...state, active, score: state.score + 2 * distance });
+    const active = ghost(state);
+    return lock({ ...state, active, score: state.score + 2 * (active.y - state.active.y) });
+}
+
+function descend(state: TetrisState, active: Piece, interval: number, softDrop: boolean): TetrisState {
+    const lower = active.y > state.lowestY;
+    return {
+        ...state,
+        active,
+        gravityMs: state.gravityMs - interval,
+        lowestY: lower ? active.y : state.lowestY,
+        lockResets: lower ? 0 : state.lockResets,
+        score: state.score + (softDrop ? 1 : 0)
+    };
+}
+
+function settle(state: TetrisState, dtMs: number): TetrisState {
+    if (!grounded(state)) return { ...state, lockMs: 0 };
+    const lockMs = state.lockMs + dtMs;
+    return lockMs >= LOCK_DELAY_MS ? lock(state) : { ...state, lockMs };
 }
 
 function fall(state: TetrisState, softDrop: boolean, dtMs: number): TetrisState {
@@ -161,21 +245,21 @@ function fall(state: TetrisState, softDrop: boolean, dtMs: number): TetrisState 
     let next = { ...state, gravityMs: state.gravityMs + dtMs };
     while (next.gravityMs >= interval) {
         const active = moved(next.board, next.active, 0, 1);
-        if (!active) return lock(next);
-        next = {
-            ...next,
-            active,
-            gravityMs: next.gravityMs - interval,
-            score: next.score + (softDrop ? 1 : 0)
-        };
+        if (!active) {
+            next = { ...next, gravityMs: 0 };
+            break;
+        }
+        next = descend(next, active, interval, softDrop);
     }
-    return next;
+    return settle(next, dtMs);
 }
 
 export function step(state: TetrisState, input: InputFrame, dtMs: number): TetrisState {
     if (state.over) return state;
     const { pressed, held } = input;
-    const controlled = turn(shift(state, pressed), pressed);
+    const ready = pressed.has('tertiary') ? swapHold(state) : state;
+    if (ready.over) return ready;
+    const controlled = turn(shift(ready, input, dtMs), pressed);
     if (pressed.has('action')) return hardDrop(controlled);
     return fall(controlled, held.has('down') || pressed.has('down'), dtMs);
 }

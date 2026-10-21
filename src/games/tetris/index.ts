@@ -11,7 +11,8 @@ export const tetris: GameDefinition<TetrisState> = {
         { keys: '↓', action: 'SOFT DROP' },
         { keys: 'SPACE', action: 'HARD DROP' },
         { keys: '↑', action: 'ROTATE RIGHT' },
-        { keys: 'Z X', action: 'ROTATE LEFT' }
+        { keys: 'Z X', action: 'ROTATE LEFT' },
+        { keys: 'C SHIFT', action: 'HOLD' }
     ],
     create,
     step,

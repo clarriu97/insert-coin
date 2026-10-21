@@ -2,10 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { createRng } from '../../engine/rng.ts';
 import type { Button, InputFrame } from '../../engine/types.ts';
 import {
+    ARR_MS,
     COLS,
     create,
+    DAS_MS,
     emptyBoard,
+    ghost,
     gravityIntervalMs,
+    LOCK_DELAY_MS,
+    MAX_LOCK_RESETS,
     pieceCells,
     ROWS,
     rotate,
@@ -240,5 +245,124 @@ describe('status', () => {
                 { label: 'LINES', value: 21 }
             ]
         });
+    });
+});
+
+describe('ghost piece', () => {
+    it('shows where the piece would land', () => {
+        expect(ghost(game({ active: piece('T', 0, 4, 5) }))).toEqual(piece('T', 0, 4, ROWS - 2));
+        const board = boardWith([[5, 15]]);
+        expect(ghost(game({ board, active: piece('T', 0, 4, 5) }))).toEqual(piece('T', 0, 4, 13));
+    });
+});
+
+describe('hold', () => {
+    it('stores the active piece and spawns the next one', () => {
+        const state = game();
+        const next = step(state, frame(['tertiary']), 16);
+        expect(next.hold).toBe(state.active.kind);
+        expect(next.active.kind).toBe(state.queue[0]);
+        expect(next.holdUsed).toBe(true);
+    });
+
+    it('can only be used once per piece', () => {
+        const held = step(game(), frame(['tertiary']), 16);
+        expect(step(held, frame(['tertiary']), 16).active).toEqual(held.active);
+    });
+
+    it('swaps with the held piece after the next lock', () => {
+        const held = step(game(), frame(['tertiary']), 16);
+        const dropped = step(held, frame(['action']), 16);
+        expect(dropped.holdUsed).toBe(false);
+        const swapped = step(dropped, frame(['tertiary']), 16);
+        expect(swapped.active.kind).toBe(held.hold);
+        expect(swapped.hold).toBe(dropped.active.kind);
+    });
+
+    it('ends the game when the swapped piece cannot spawn', () => {
+        const board = boardWith([[3, 1], [4, 1], [5, 1], [6, 1]]);
+        const state = game({ board, hold: 'T', active: piece('O', 0, 0, 10) });
+        expect(step(state, frame(['tertiary']), 16).over).toBe(true);
+    });
+});
+
+describe('lock delay', () => {
+    const grounded = () => game({ active: piece('T', 0, 4, ROWS - 2), lowestY: ROWS - 2 });
+    const isEmpty = (board: Board) => board.every((row) => row.every((cell) => cell === null));
+
+    it('locks 500 ms after the piece touches down', () => {
+        const waiting = step(grounded(), frame(), LOCK_DELAY_MS - 1);
+        expect(waiting.active).toEqual(piece('T', 0, 4, ROWS - 2));
+        expect(isEmpty(waiting.board)).toBe(true);
+        const locked = step(waiting, frame(), 1);
+        expect(locked.board[ROWS - 1]?.[4]).toBe('T');
+        expect(locked.active.kind).toBe(waiting.queue[0]);
+    });
+
+    it('resets the timer when the piece moves or rotates', () => {
+        const waiting = step(grounded(), frame(), 400);
+        const moved = step(waiting, frame(['left']), 400);
+        const rotated = step(moved, frame(['up']), 0);
+        expect(rotated.active.rotation).toBe(1);
+        expect(isEmpty(step(rotated, frame(), 400).board)).toBe(true);
+    });
+
+    it('stops resetting after 15 moves', () => {
+        let state = grounded();
+        for (let reset = 0; reset < MAX_LOCK_RESETS; reset++) {
+            state = step(state, frame([reset % 2 === 0 ? 'left' : 'right']), 100);
+        }
+        expect(isEmpty(state.board)).toBe(true);
+        const locked = step(state, frame(['left']), 400);
+        expect(isEmpty(locked.board)).toBe(false);
+    });
+
+    it('restores the resets when the piece reaches a new lowest row', () => {
+        const board = boardWith([[0, 20], [1, 20]]);
+        const state = game({ board, active: piece('O', 0, 0, 18), lowestY: 18, lockResets: MAX_LOCK_RESETS });
+        const offLedge = step(step(state, frame(['right']), 16), frame(['right']), 16);
+        expect(offLedge.lockMs).toBe(0);
+        const fallen = step(offLedge, frame(), 1000);
+        expect(fallen.active.y).toBe(19);
+        expect(fallen.lockResets).toBe(0);
+    });
+
+    it('applies while soft dropping on the floor', () => {
+        const state = step(grounded(), frame([], ['down']), 100);
+        expect(state.active).toEqual(piece('T', 0, 4, ROWS - 2));
+        expect(state.score).toBe(0);
+    });
+});
+
+describe('auto shift', () => {
+    const start = () => game({ active: piece('I', 0, 0, 5) });
+
+    it('moves once, waits 170 ms, then repeats every 50 ms', () => {
+        let state = step(start(), frame(['right'], ['right']), 16);
+        expect(state.active.x).toBe(1);
+        state = step(state, frame([], ['right']), DAS_MS - 1);
+        expect(state.active.x).toBe(1);
+        state = step(state, frame([], ['right']), 1);
+        expect(state.active.x).toBe(2);
+        state = step(state, frame([], ['right']), ARR_MS);
+        expect(state.active.x).toBe(3);
+        state = step(state, frame([], ['right']), ARR_MS * 2);
+        expect(state.active.x).toBe(5);
+        state = step(state, frame([], ['right']), ARR_MS * 10);
+        expect(state.active.x).toBe(COLS - 4);
+    });
+
+    it('stops when released and moves once on a tap', () => {
+        const released = step(step(start(), frame(['right'], ['right']), 16), frame(), 500);
+        expect(released.active.x).toBe(1);
+        const tapped = step(released, frame(['right']), 16);
+        expect(step(tapped, frame(), 500).active.x).toBe(2);
+    });
+
+    it('follows the most recently pressed direction', () => {
+        const right = step(game({ active: piece('I', 0, 3, 5) }), frame(['right'], ['right']), 16);
+        const left = step(right, frame(['left'], ['left', 'right']), 16);
+        expect(left.active.x).toBe(3);
+        expect(step(left, frame([], ['left', 'right']), DAS_MS).active.x).toBe(2);
     });
 });

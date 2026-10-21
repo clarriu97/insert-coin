@@ -1,5 +1,5 @@
 import type { Palette } from '../../engine/types.ts';
-import { COLS, HIDDEN_ROWS, pieceCells, VISIBLE_ROWS, type TetrisState } from './logic.ts';
+import { COLS, ghost, HIDDEN_ROWS, pieceCells, VISIBLE_ROWS, type TetrisState } from './logic.ts';
 import { cells, type PieceKind } from './srs.ts';
 
 export const CELL = 8;
@@ -7,6 +7,9 @@ const MARGIN = 8;
 const BOARD_WIDTH = COLS * CELL;
 const BOARD_HEIGHT = VISIBLE_ROWS * CELL;
 const PANEL_X = MARGIN * 2 + BOARD_WIDTH;
+const NEXT_COUNT = 3;
+const LABEL_GAP = 12;
+const PREVIEW_SLOT = 3 * CELL;
 
 export const SCREEN = { width: 160, height: BOARD_HEIGHT + MARGIN * 2 };
 
@@ -30,9 +33,16 @@ function drawBoardCell(ctx: CanvasRenderingContext2D, column: number, row: numbe
     drawCell(ctx, MARGIN + column * CELL, MARGIN + (row - HIDDEN_ROWS) * CELL, color);
 }
 
-function drawPreview(ctx: CanvasRenderingContext2D, kind: PieceKind, x: number, y: number) {
+function drawGhostCell(ctx: CanvasRenderingContext2D, column: number, row: number, color: string) {
+    if (row < HIDDEN_ROWS) return;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(MARGIN + column * CELL + 0.5, MARGIN + (row - HIDDEN_ROWS) * CELL + 0.5, CELL - 2, CELL - 2);
+}
+
+function drawPreview(ctx: CanvasRenderingContext2D, kind: PieceKind, x: number, y: number, color: string) {
     for (const [dx, dy] of cells(kind, 0)) {
-        drawCell(ctx, x + dx * CELL, y + dy * CELL, PIECE_COLORS[kind]);
+        drawCell(ctx, x + dx * CELL, y + dy * CELL, color);
     }
 }
 
@@ -54,11 +64,23 @@ export function render(ctx: CanvasRenderingContext2D, state: TetrisState, palett
     state.board.forEach((row, y) => row.forEach((cell, x) => {
         if (cell) drawBoardCell(ctx, x, y, PIECE_COLORS[cell]);
     }));
+    const color = PIECE_COLORS[state.active.kind];
+    for (const [x, y] of pieceCells(ghost(state))) {
+        drawGhostCell(ctx, x, y, color);
+    }
     for (const [x, y] of pieceCells(state.active)) {
-        drawBoardCell(ctx, x, y, PIECE_COLORS[state.active.kind]);
+        drawBoardCell(ctx, x, y, color);
     }
 
     drawLabel(ctx, 'NEXT', MARGIN, palette);
-    const [next] = state.queue;
-    if (next) drawPreview(ctx, next, PANEL_X, MARGIN + 12);
+    state.queue.slice(0, NEXT_COUNT).forEach((kind, index) => {
+        drawPreview(ctx, kind, PANEL_X, MARGIN + LABEL_GAP + index * PREVIEW_SLOT, PIECE_COLORS[kind]);
+    });
+
+    const holdY = MARGIN + LABEL_GAP + NEXT_COUNT * PREVIEW_SLOT + MARGIN;
+    drawLabel(ctx, 'HOLD', holdY, palette);
+    if (state.hold) {
+        const holdColor = state.holdUsed ? palette.muted : PIECE_COLORS[state.hold];
+        drawPreview(ctx, state.hold, PANEL_X, holdY + LABEL_GAP, holdColor);
+    }
 }
