@@ -3,14 +3,15 @@ import { useNavigate } from 'react-router';
 import { DEFAULT_PALETTE } from '../design/palette.ts';
 import { createHighScoreStore, type HighScore } from '../engine/highscores.ts';
 import { createEntry, entryText, updateEntry, type InitialsEntry } from '../engine/initials.ts';
-import { createInput } from '../engine/input.ts';
+import { createInput, type Input } from '../engine/input.ts';
 import { createLoop } from '../engine/loop.ts';
 import { createRng, randomSeed } from '../engine/rng.ts';
 import { advanceSession, createSession, pauseSession, type Phase } from '../engine/session.ts';
-import type { GameDefinition, GameStatus, Screen } from '../engine/types.ts';
+import type { Button, GameDefinition, GameStatus, Screen } from '../engine/types.ts';
 import type { GameEntry } from '../games/registry.ts';
 import { GameCabinet } from './GameCabinet.tsx';
 import { GameOverlay } from './GameOverlay.tsx';
+import { TouchControls } from './TouchControls.tsx';
 
 interface GameHostProps {
     entry: GameEntry;
@@ -56,6 +57,7 @@ interface GameScreenProps {
 function GameScreen({ definition, onExit }: GameScreenProps) {
     const frameRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const inputRef = useRef<Input | null>(null);
     const scale = usePixelScale(frameRef, definition.screen);
     const [view, setView] = useState<View>({ phase: 'ready', status: null, best: 0, entry: null, table: [] });
     const exit = useEffectEvent(onExit);
@@ -66,6 +68,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
 
         const rng = createRng(randomSeed());
         const input = createInput();
+        inputRef.current = input;
         const store = createHighScoreStore();
         let session = createSession(definition, rng);
         let best = store.best(definition.id);
@@ -146,6 +149,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
         return () => {
             loop.stop();
             input.dispose();
+            inputRef.current = null;
         };
     }, [definition]);
 
@@ -178,6 +182,10 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                 />
                 <GameOverlay view={view} definition={definition} />
             </div>
+            <TouchControls
+                onPress={(button: Button, source: string) => inputRef.current?.press(button, source)}
+                onRelease={(button: Button, source: string) => inputRef.current?.release(button, source)}
+            />
         </div>
     );
 }
@@ -192,7 +200,7 @@ function usePixelScale(ref: RefObject<HTMLElement | null>, screen: Screen): numb
             if (!entry) return;
             const { width, height } = entry.contentRect;
             const fit = Math.min(width / screen.width, height / screen.height);
-            setScale(fit >= 1 ? Math.floor(fit) : fit);
+            setScale(fit >= 2 ? Math.floor(fit) : fit);
         });
         observer.observe(element);
         return () => observer.disconnect();
