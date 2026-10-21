@@ -23,10 +23,10 @@ export function AttractMode({ games }: AttractModeProps) {
 
     const table = tables[slide - 1];
     return (
-        <div className="attract" aria-live="polite">
+        <div className="attract" aria-hidden="true">
             {table ? (
-                <section key={table.entry.id} className="attract-slide" aria-label={`${table.entry.title} high scores`}>
-                    <h2 className="attract-heading">HIGH SCORES</h2>
+                <div key={table.entry.id} className="attract-slide attract-scores">
+                    <p className="attract-heading">HIGH SCORES</p>
                     <p className="attract-game">{table.entry.title}</p>
                     {table.scores.length > 0 ? (
                         <ol className="attract-table">
@@ -41,13 +41,13 @@ export function AttractMode({ games }: AttractModeProps) {
                     ) : (
                         <p className="attract-empty">BE THE FIRST</p>
                     )}
-                </section>
+                </div>
             ) : (
-                <section key="title" className="attract-slide attract-title" aria-label="title">
+                <div key="title" className="attract-slide attract-title">
                     <p className="attract-logo">INSERT COIN</p>
                     <p className="attract-sub">{games.length} CLASSIC GAMES</p>
                     <p className="blink">PRESS START</p>
-                </section>
+                </div>
             )}
         </div>
     );

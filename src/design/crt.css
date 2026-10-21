@@ -24,7 +24,7 @@
 }
 
 .crt::before {
-  background: repeating-linear-gradient(to bottom, transparent 0 2px, color-mix(in srgb, var(--shadow) 28%, transparent) 2px 3px);
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, color-mix(in srgb, var(--shadow) 22%, transparent) 2px 3px);
 }
 
 .crt-band {
@@ -42,7 +42,7 @@
 .crt::after {
   background:
     radial-gradient(ellipse at 22% 12%, color-mix(in srgb, var(--phosphor-white) 7%, transparent), transparent 38%),
-    radial-gradient(ellipse at 50% 50%, transparent 62%, color-mix(in srgb, var(--shadow) 55%, transparent) 100%);
+    radial-gradient(ellipse at 50% 50%, transparent 86%, color-mix(in srgb, var(--shadow) 55%, transparent) 100%);
   animation: crt-flicker 4s steps(1) infinite;
   will-change: opacity;
 }
