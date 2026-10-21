@@ -7,7 +7,7 @@ describe('registry', () => {
         expect(new Set(ids).size).toBe(ids.length);
     });
 
-    it.each(GAMES.filter((entry) => entry.kind === 'native'))('loads $id with matching metadata', async (entry) => {
+    it.each(GAMES)('loads $id with matching metadata', async (entry) => {
         const definition = await entry.load();
         expect(definition.id).toBe(entry.id);
         expect(definition.title).toBe(entry.title);

@@ -1,28 +1,16 @@
 import type { GameDefinition } from '../engine/types.ts';
 
-interface BaseEntry {
+export interface GameEntry {
     id: string;
     title: string;
     cover: string;
     players: string;
     hidden?: boolean;
-}
-
-export interface NativeEntry extends BaseEntry {
-    kind: 'native';
     load(): Promise<GameDefinition<unknown>>;
 }
 
-export interface LegacyEntry extends BaseEntry {
-    kind: 'legacy';
-    src: string;
-}
-
-export type GameEntry = NativeEntry | LegacyEntry;
-
 export const GAMES: GameEntry[] = [
     {
-        kind: 'native',
         id: 'snake',
         title: 'SNAKE',
         cover: 'games/snake.svg',
@@ -30,15 +18,13 @@ export const GAMES: GameEntry[] = [
         load: () => import('./snake/index.ts').then((module) => module.snake)
     },
     {
-        kind: 'legacy',
         id: 'tetris',
-        title: 'TETRIS',
+        title: 'BLOCKS',
         cover: 'games/tetris.svg',
         players: '1 PLAYER',
-        src: 'legacy/games/tetris/index.html'
+        load: () => import('./tetris/index.ts').then((module) => module.tetris)
     },
     {
-        kind: 'native',
         id: 'demo',
         title: 'TEST PATTERN',
         cover: 'favicon.svg',
@@ -49,7 +35,7 @@ export const GAMES: GameEntry[] = [
 ];
 
 export function gamePath(entry: GameEntry): string {
-    return entry.kind === 'native' ? `/play/${entry.id}` : `/${entry.id}`;
+    return `/play/${entry.id}`;
 }
 
 export function findGame(id: string | undefined): GameEntry | undefined {
