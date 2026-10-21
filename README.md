@@ -1,115 +1,73 @@
-# INSERT COIN 🕹️
+# INSERT COIN
 
-A retro-themed web arcade where you can play classic retro games.
+A browser arcade cabinet with four classic-style games, built to feel like an early-80s upright: backlit marquee, CRT screen with scanlines, chiptune sound and high-score tables.
 
-> **Note**: This project has been entirely developed by AI under the direction of clarriu97. Every line of code, from the retro-styled interface to the game implementations, has been crafted through AI assistance while maintaining high quality and best practices.
+[![CI](https://github.com/clarriu97/insert-coin/actions/workflows/ci.yml/badge.svg)](https://github.com/clarriu97/insert-coin/actions/workflows/ci.yml)
+[![Deploy](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml/badge.svg)](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml)
 
-[![Deployment Status](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml/badge.svg)](https://github.com/clarriu97/insert-coin/actions/workflows/deploy.yml)
-[![Play Now!](https://img.shields.io/badge/Play%20Now!-GitHub%20Pages-success?logo=github)](https://clarriu97.github.io/insert-coin/)
-[![Made with AI](https://img.shields.io/badge/Made%20with-AI-blueviolet?logo=openai)](https://github.com/clarriu97/insert-coin)
-[![Powered by Coffee](https://img.shields.io/badge/Powered%20by-☕%20Coffee-brown)](https://github.com/clarriu97/insert-coin)
-[![Retro Level](https://img.shields.io/badge/Retro%20Level-Over%209000!-orange)](https://github.com/clarriu97/insert-coin)
+**Play: https://larri.dev/insert-coin/**
 
-## 🎮 Available Games
+## Games
 
-### 🐍 Snake
-- Classic snake gameplay
-- Retro neon aesthetics
-- Score tracking
-- Increasing difficulty
+| Game | Controls |
+|---|---|
+| **SNAKE** | Arrows / WASD steer · pick a speed, then eat and grow; fill the board to win |
+| **BLOCKS** | ← → move · ↓ soft drop · SPACE hard drop · ↑ / Z X rotate · C hold. 7-bag, SRS wall kicks, ghost piece, lock delay |
+| **INVADERS** | ← → move · SPACE fire. Marching formation, destructible bunkers, mystery saucer |
+| **ASTEROIDS** | ← → rotate · ↑ thrust · SPACE fire · Z X hyperspace. Vector graphics, splitting rocks, saucers |
 
-### 🟦 Tetris
-- Classic Tetris mechanics
-- Neon-colored pieces
-- Score and level system
-- Next piece preview
-- Pause functionality
+Everywhere: **ENTER** start · **P** pause · **ESC** back to the menu · **M** sound on/off. On phones, on-screen controls appear automatically.
 
-## 🚀 Features
+Scores that make the top 10 ask for your initials and are kept in your browser. Leave the menu idle and the cabinet goes into attract mode.
 
-- Retro arcade cabinet interface
-- Neon aesthetic design
-- Responsive controls
-- Score tracking system
-- Game state management
-- Mobile-friendly layout
+## Development
 
-## 🛠️ Tech Stack
-
-- React + React Router
-- Vite
-- HTML5 Canvas
-- CSS3 with custom properties
-- Responsive Design
-- GitHub Pages for deployment
-- GitHub Actions for CI/CD
-
-## 🎯 Getting Started
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/clarriu97/insert-coin.git
-   cd insert-coin
-   ```
-
-2. Install dependencies and run in development:
-   ```bash
-   pnpm install
-   pnpm dev
-   ```
-
-3. Start playing! 🎮
-
-## 🎨 Project Structure
-
-```
-insert-coin/
-├─ src/
-│  ├─ main.jsx        # React entry
-│  ├─ App.jsx         # Router setup
-│  ├─ views/          # Main app views
-│  └─ styles.css      # Global styles
-├─ public/legacy/     # Legacy Snake/Tetris pages
-└─ public/            # Static assets
-```
-
-## 🔄 Development
-
-CI/CD (`.github/workflows/deploy.yml`) runs on every push to `main` or `master`:
-
-1. `pnpm install --frozen-lockfile`
-2. `pnpm run lint`
-3. `pnpm run build` with `VITE_BASE_PATH` set to `/<repository-name>/` (correct asset URLs on GitHub Pages)
-
-For **this** repository (`clarriu97/insert-coin`), GitHub sets that to **`/insert-coin/`**, which matches the live site:
-
-**https://clarriu97.github.io/insert-coin/**
-
-Routing uses hash URLs (`/#/`, `/#/snake`, `/#/tetris`) so refreshes work on static hosting.
-
-The built site is uploaded from the `dist/` folder via **GitHub Actions** Pages deployment.
-
-**Repository settings:** In GitHub → *Settings* → *Pages*, set **Source** to **GitHub Actions** (not “Deploy from a branch”). The first run may require approving the `github-pages` environment if your org uses deployment protection.
-
-**Local production build check** (same as CI for this repo):
+Requirements: Node 24+, pnpm 12, [just](https://github.com/casey/just).
 
 ```bash
-VITE_BASE_PATH=/insert-coin/ pnpm run build
+just install
 ```
 
-## 🎯 Upcoming Features
+```bash
+just dev
+```
 
-- [ ] More classic games
-- [ ] High score system
-- [ ] Sound effects
-- [ ] Mobile touch controls
-- [ ] Multiplayer modes
+| Recipe | What it does |
+|---|---|
+| `just dev` | Vite dev server |
+| `just build` / `just preview` | Production build and local preview |
+| `just test` / `just test-watch` | Vitest unit tests |
+| `just e2e` | Builds under `/insert-coin/` and runs Playwright (desktop + phone) |
+| `just check-fast` | ESLint (zero warnings) + TypeScript |
+| `just check-task` | `check-fast` + unit tests |
+| `just check-full` | `check-fast` + coverage thresholds + e2e + bundle budgets (what CI runs) |
 
-## 📜 License
+The quality bar is described in [CONSTRAINTS.md](CONSTRAINTS.md). Specs live in [docs/specs](docs/specs).
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Architecture
 
-## 🙏 Acknowledgments
+```
+src/
+  engine/     framework-agnostic runtime: game contract, fixed-timestep loop,
+              input (keyboard + touch), session phases, audio synth, high scores
+  games/      one folder per game: pure logic.ts + tests, canvas render.ts, index.ts
+  shell/      React UI: cabinet, menu, attract mode, game host, overlays, touch controls
+  design/     tokens.css (colours, fonts, spacing), CRT effect, palette.ts for canvases
+e2e/          Playwright specs
+```
 
-- Inspired by classic arcade cabinets
-- Font: [Press Start 2P](https://fonts.googleapis.com/css2?family=Press+Start+2P) 
+Games are pure: `create(rng)` builds a state, `step(state, input, dtMs)` returns the next one, and `render` draws it. The host owns the loop, input, pause, game over and high scores, so a game never touches the DOM, timers or storage.
+
+### Adding a game
+
+1. Create `src/games/<id>/` with `logic.ts` (pure, seeded randomness kept in state), `logic.test.ts` (≥ 85 % coverage), `render.ts` (palette colours only) and `index.ts` exporting a `GameDefinition` (optionally with `sounds(previous, next)`).
+2. Register it in `src/games/registry.ts` with a title and an original cover in `public/games/`.
+3. `just check-full`: the menu, routing and the generic e2e smoke test pick it up automatically.
+
+## Deployment
+
+Every push to `master` runs the checks and deploys `dist/` to GitHub Pages through GitHub Actions. Routing uses hash URLs (`#/play/snake`) so refreshes work on static hosting.
+
+## License
+
+MIT, see [LICENSE](LICENSE). Fonts: Press Start 2P and VT323 (SIL Open Font License), self-hosted via Fontsource. All game art and sound are original.
