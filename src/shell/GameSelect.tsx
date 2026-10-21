@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { gamePath, GAMES } from '../games/registry.ts';
 
-const games = ['/snake', '/tetris'];
+const visibleGames = GAMES.filter((entry) => !entry.hidden);
+const base = import.meta.env.BASE_URL;
 
-function HomeView() {
+export function GameSelect() {
     const navigate = useNavigate();
-    const base = import.meta.env.BASE_URL;
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     useEffect(() => {
@@ -15,11 +16,14 @@ function HomeView() {
             }
 
             if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                setSelectedIndex((prev) => (prev - 1 + games.length) % games.length);
+                setSelectedIndex((prev) => (prev - 1 + visibleGames.length) % visibleGames.length);
             } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                setSelectedIndex((prev) => (prev + 1) % games.length);
+                setSelectedIndex((prev) => (prev + 1) % visibleGames.length);
             } else if (e.key === 'Enter' || e.key === ' ') {
-                navigate(games[selectedIndex] ?? '/');
+                const selected = visibleGames[selectedIndex];
+                if (selected) {
+                    navigate(gamePath(selected));
+                }
             }
         };
 
@@ -39,26 +43,19 @@ function HomeView() {
                 <section className="screen-bezel" aria-label="Game selection screen">
                     <div className="crt-screen">
                         <div className="game-grid">
-                            <button
-                                className={`game-tile snake ${selectedIndex === 0 ? 'selected' : ''}`}
-                                type="button"
-                                onClick={() => navigate('/snake')}
-                                tabIndex={-1}
-                            >
-                                <img src={`${base}games/snake.svg`} alt="Snake" />
-                                <span className="game-name">SNAKE</span>
-                                <span className="game-meta">1 PLAYER</span>
-                            </button>
-                            <button
-                                className={`game-tile tetris ${selectedIndex === 1 ? 'selected' : ''}`}
-                                type="button"
-                                onClick={() => navigate('/tetris')}
-                                tabIndex={-1}
-                            >
-                                <img src={`${base}games/tetris.svg`} alt="Tetris" />
-                                <span className="game-name">TETRIS</span>
-                                <span className="game-meta">1 PLAYER</span>
-                            </button>
+                            {visibleGames.map((entry, index) => (
+                                <button
+                                    key={entry.id}
+                                    className={`game-tile ${entry.id} ${selectedIndex === index ? 'selected' : ''}`}
+                                    type="button"
+                                    onClick={() => navigate(gamePath(entry))}
+                                    tabIndex={-1}
+                                >
+                                    <img src={`${base}${entry.cover}`} alt={entry.title} />
+                                    <span className="game-name">{entry.title}</span>
+                                    <span className="game-meta">{entry.players}</span>
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </section>
@@ -88,5 +85,3 @@ function HomeView() {
         </div>
     );
 }
-
-export default HomeView;
