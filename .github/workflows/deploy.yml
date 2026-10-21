@@ -28,19 +28,19 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm run lint
+        run: pnpm exec eslint . --max-warnings 0 && pnpm exec tsc --noEmit
 
       - name: Build
         env:
           VITE_BASE_PATH: /${{ github.event.repository.name }}/
-        run: pnpm run build
+        run: pnpm exec vite build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

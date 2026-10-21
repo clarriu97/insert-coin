@@ -1,9 +1,14 @@
 import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
-function LegacyGameView({ title, src }) {
+interface LegacyGameViewProps {
+    title: string;
+    src: string;
+}
+
+function LegacyGameView({ title, src }: LegacyGameViewProps) {
     const navigate = useNavigate();
-    const frameRef = useRef(null);
+    const frameRef = useRef<HTMLIFrameElement>(null);
 
     useEffect(() => {
         const frame = frameRef.current;
@@ -11,14 +16,14 @@ function LegacyGameView({ title, src }) {
             frame.focus();
         }
 
-        const onKeyDown = (e) => {
+        const onKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 e.preventDefault();
                 navigate('/');
             }
         };
 
-        const onMessage = (e) => {
+        const onMessage = (e: MessageEvent) => {
             if (e.data?.type !== 'INSERT_COIN_EXIT') return;
             const win = frameRef.current?.contentWindow;
             if (win && e.source === win) {
