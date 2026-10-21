@@ -16,7 +16,10 @@ describe('palette', () => {
         ['danger', 'phosphor-magenta'],
         ['muted', 'phosphor-dim'],
         ['primary', 'phosphor-green'],
-        ['secondary', 'phosphor-cyan']
+        ['secondary', 'phosphor-cyan'],
+        ['orange', 'phosphor-orange'],
+        ['blue', 'phosphor-blue'],
+        ['yellow', 'phosphor-yellow']
     ] as const)('mirrors %s from the --%s token', (field, name) => {
         expect(DEFAULT_PALETTE[field]).toBe(token(name));
     });
