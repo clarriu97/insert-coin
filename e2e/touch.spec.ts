@@ -22,12 +22,12 @@ test('touch controls drive a game on a phone viewport', async ({ page }) => {
 test('snake fits the phone screen with controls', async ({ page }) => {
     await page.goto('./#/play/snake');
     await expect(page.getByRole('dialog', { name: 'ready' })).toBeVisible();
-    const canvas = await page.getByLabel('SNAKE game screen').boundingBox();
+    const screen = page.getByLabel('SNAKE game screen');
+    await expect.poll(async () => (await screen.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(240);
     const controls = await page.getByLabel('touch controls').boundingBox();
     const viewport = page.viewportSize();
-    expect(canvas && controls && viewport).toBeTruthy();
-    if (!canvas || !controls || !viewport) return;
-    expect(canvas.width).toBeGreaterThanOrEqual(240);
+    expect(controls && viewport).toBeTruthy();
+    if (!controls || !viewport) return;
     expect(controls.y + controls.height).toBeLessThanOrEqual(viewport.height);
 
     for (const button of await page.getByLabel('touch controls').getByRole('button').all()) {
