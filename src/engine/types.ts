@@ -15,6 +15,7 @@ export interface HudField {
 export interface GameStatus {
     score: number;
     over: boolean;
+    won?: boolean;
     hud: HudField[];
 }
 

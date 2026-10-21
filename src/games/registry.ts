@@ -22,12 +22,12 @@ export type GameEntry = NativeEntry | LegacyEntry;
 
 export const GAMES: GameEntry[] = [
     {
-        kind: 'legacy',
+        kind: 'native',
         id: 'snake',
         title: 'SNAKE',
         cover: 'games/snake.svg',
         players: '1 PLAYER',
-        src: 'legacy/games/snake/index.html'
+        load: () => import('./snake/index.ts').then((module) => module.snake)
     },
     {
         kind: 'legacy',
