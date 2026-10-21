@@ -6,11 +6,11 @@ import { createLoop } from '../engine/loop.ts';
 import { createRng, randomSeed } from '../engine/rng.ts';
 import { advanceSession, createSession, pauseSession, type Phase } from '../engine/session.ts';
 import type { GameDefinition, GameStatus, Screen } from '../engine/types.ts';
-import type { NativeEntry } from '../games/registry.ts';
+import type { GameEntry } from '../games/registry.ts';
 import { GameCabinet } from './GameCabinet.tsx';
 
 interface GameHostProps {
-    entry: NativeEntry;
+    entry: GameEntry;
 }
 
 export function GameHost({ entry }: GameHostProps) {
