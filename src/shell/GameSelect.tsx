@@ -1,87 +1,93 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { createHighScoreStore } from '../engine/highscores.ts';
 import { gamePath, GAMES } from '../games/registry.ts';
+import { Cabinet } from './Cabinet.tsx';
 
 const visibleGames = GAMES.filter((entry) => !entry.hidden);
 const base = import.meta.env.BASE_URL;
+const PREVIOUS_KEYS = ['ArrowUp', 'ArrowLeft', 'KeyW', 'KeyA'];
+const NEXT_KEYS = ['ArrowDown', 'ArrowRight', 'KeyS', 'KeyD'];
 
 export function GameSelect() {
     const navigate = useNavigate();
     const [selectedIndex, setSelectedIndex] = useState(0);
+    const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const best = useMemo(() => {
+        const store = createHighScoreStore();
+        return new Map(visibleGames.map((entry) => [entry.id, store.best(entry.id)]));
+    }, []);
+    const selected = visibleGames[selectedIndex];
+
+    useEffect(() => {
+        itemRefs.current[selectedIndex]?.focus();
+    }, [selectedIndex]);
 
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ' '].includes(e.key)) {
+            const delta = PREVIOUS_KEYS.includes(e.code) ? -1 : NEXT_KEYS.includes(e.code) ? 1 : 0;
+            if (delta !== 0) {
                 e.preventDefault();
-            }
-
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-                setSelectedIndex((prev) => (prev - 1 + visibleGames.length) % visibleGames.length);
-            } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-                setSelectedIndex((prev) => (prev + 1) % visibleGames.length);
-            } else if (e.key === 'Enter' || e.key === ' ') {
-                const selected = visibleGames[selectedIndex];
-                if (selected) {
-                    navigate(gamePath(selected));
-                }
+                setSelectedIndex((prev) => (prev + delta + visibleGames.length) % visibleGames.length);
             }
         };
-
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [navigate, selectedIndex]);
+    }, []);
 
     return (
-        <div className="app-shell">
-            <div className="arcade-machine">
-                <header className="marquee">
-                    <p className="marquee-subtitle">EST. 1987</p>
-                    <h1 className="marquee-title">INSERT COIN</h1>
-                    <p className="marquee-subtitle blink">CHOOSE YOUR GAME WITH ARROWS + ENTER</p>
-                </header>
+        <Cabinet
+            tag={`${visibleGames.length} GAMES IN 1`}
+            title="INSERT COIN"
+            screenLabel="Game selection screen"
+            bezelNote="USE JOYSTICK TO SELECT · PRESS START TO PLAY"
+            panel={
+                <p className="panel-label">
+                    <a href="https://github.com/clarriu97/insert-coin" target="_blank" rel="noreferrer">clarriu97 · GITHUB</a>
+                </p>
+            }
+        >
+            <div className="menu">
+                <div className="menu-header">
+                    <h2>SELECT GAME</h2>
+                    <p className="menu-credit">CREDIT 00</p>
+                </div>
 
-                <section className="screen-bezel" aria-label="Game selection screen">
-                    <div className="crt-screen">
-                        <div className="game-grid">
-                            {visibleGames.map((entry, index) => (
-                                <button
-                                    key={entry.id}
-                                    className={`game-tile ${entry.id} ${selectedIndex === index ? 'selected' : ''}`}
-                                    type="button"
-                                    onClick={() => navigate(gamePath(entry))}
-                                    tabIndex={-1}
-                                >
-                                    <img src={`${base}${entry.cover}`} alt={entry.title} />
-                                    <span className="game-name">{entry.title}</span>
-                                    <span className="game-meta">{entry.players}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </section>
+                <ul className="menu-list">
+                    {visibleGames.map((entry, index) => (
+                        <li key={entry.id}>
+                            <button
+                                ref={(element) => {
+                                    itemRefs.current[index] = element;
+                                }}
+                                className="menu-item"
+                                type="button"
+                                aria-current={index === selectedIndex ? 'true' : undefined}
+                                tabIndex={index === selectedIndex ? 0 : -1}
+                                onFocus={() => setSelectedIndex(index)}
+                                onMouseEnter={() => setSelectedIndex(index)}
+                                onClick={() => navigate(gamePath(entry))}
+                            >
+                                <span className="menu-cursor" aria-hidden="true">▶</span>
+                                <span className="menu-name">{entry.title}</span>
+                                <span className="menu-meta">{entry.players}</span>
+                            </button>
+                        </li>
+                    ))}
+                </ul>
 
-                <section className="control-panel">
-                    <div className="joystick-base" aria-hidden="true">
-                        <div className="joystick-stick"></div>
-                    </div>
-                    <div className="panel-center">
-                        <p className="panel-label">ARROWS: SELECT · ENTER: PLAY · ESC: BACK</p>
-                    </div>
-                    <div className="action-buttons" aria-hidden="true">
-                        <span className="arc-btn red"></span>
-                        <span className="arc-btn blue"></span>
-                    </div>
-                </section>
+                {selected && (
+                    <aside className="menu-preview" aria-label={`${selected.title} preview`}>
+                        <img src={`${base}${selected.cover}`} alt="" width="160" height="160" />
+                        <dl className="menu-best">
+                            <dt>BEST</dt>
+                            <dd>{String(best.get(selected.id) ?? 0).padStart(6, '0')}</dd>
+                        </dl>
+                    </aside>
+                )}
 
-                <footer className="machine-footer">
-                    <p>
-                        Built by{' '}
-                        <a href="https://github.com/clarriu97" target="_blank" rel="noreferrer">clarriu97</a>
-                        {' '}·{' '}
-                        <a href="https://github.com/clarriu97/insert-coin" target="_blank" rel="noreferrer">GitHub</a>
-                    </p>
-                </footer>
+                <p className="menu-footer blink">INSERT COIN</p>
             </div>
-        </div>
+        </Cabinet>
     );
 }

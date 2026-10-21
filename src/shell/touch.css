@@ -1,0 +1,76 @@
+.touch-controls {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .host {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .touch-controls {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    justify-items: center;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 2px 0;
+  }
+}
+
+.touch-btn {
+  font-family: inherit;
+  color: var(--phosphor-white);
+  border: 2px solid var(--cabinet-line);
+  background: var(--cabinet-edge);
+  border-radius: 10px;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn:active {
+  background: var(--cabinet-panel);
+  border-color: var(--phosphor-amber);
+}
+
+.touch-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(3, 42px);
+  gap: 2px;
+}
+
+.pad-up { grid-area: 1 / 2; }
+.pad-left { grid-area: 2 / 1; }
+.pad-right { grid-area: 2 / 3; }
+.pad-down { grid-area: 3 / 2; }
+
+.touch-system {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.touch-system .touch-btn {
+  font-size: 0.45rem;
+  padding: 8px 6px;
+}
+
+.touch-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 50px);
+  grid-template-rows: repeat(2, 50px);
+  gap: 6px;
+}
+
+.touch-actions .touch-btn {
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.act-c { grid-area: 1 / 1; }
+.act-b { grid-area: 2 / 1; }
+.act-a { grid-area: 1 / 2 / 3 / 3; align-self: center; height: 50px; background: color-mix(in srgb, var(--phosphor-magenta) 25%, var(--cabinet-edge)); border-color: var(--phosphor-magenta); }
+
