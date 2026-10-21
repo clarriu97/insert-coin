@@ -30,12 +30,12 @@ export const GAMES: GameEntry[] = [
         load: () => import('./snake/index.ts').then((module) => module.snake)
     },
     {
-        kind: 'legacy',
+        kind: 'native',
         id: 'tetris',
-        title: 'TETRIS',
+        title: 'BLOCKS',
         cover: 'games/tetris.svg',
         players: '1 PLAYER',
-        src: 'legacy/games/tetris/index.html'
+        load: () => import('./tetris/index.ts').then((module) => module.tetris)
     },
     {
         kind: 'native',
