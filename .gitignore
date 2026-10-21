@@ -53,3 +53,7 @@ Thumbs.db
 
 # Logs
 *.log 
+# test output
+coverage/
+playwright-report/
+test-results/
