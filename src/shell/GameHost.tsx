@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router';
 import { DEFAULT_PALETTE } from '../design/palette.ts';
+import { createHighScoreStore, type HighScore } from '../engine/highscores.ts';
+import { createEntry, entryText, updateEntry, type InitialsEntry } from '../engine/initials.ts';
 import { createInput } from '../engine/input.ts';
 import { createLoop } from '../engine/loop.ts';
 import { createRng, randomSeed } from '../engine/rng.ts';
@@ -8,6 +10,7 @@ import { advanceSession, createSession, pauseSession, type Phase } from '../engi
 import type { GameDefinition, GameStatus, Screen } from '../engine/types.ts';
 import type { GameEntry } from '../games/registry.ts';
 import { GameCabinet } from './GameCabinet.tsx';
+import { GameOverlay } from './GameOverlay.tsx';
 
 interface GameHostProps {
     entry: GameEntry;
@@ -37,9 +40,12 @@ export function GameHost({ entry }: GameHostProps) {
     );
 }
 
-interface View {
+export interface View {
     phase: Phase;
     status: GameStatus | null;
+    best: number;
+    entry: InitialsEntry | null;
+    table: HighScore[];
 }
 
 interface GameScreenProps {
@@ -51,7 +57,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
     const frameRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const scale = usePixelScale(frameRef, definition.screen);
-    const [view, setView] = useState<View>({ phase: 'ready', status: null });
+    const [view, setView] = useState<View>({ phase: 'ready', status: null, best: 0, entry: null, table: [] });
     const exit = useEffectEvent(onExit);
 
     useEffect(() => {
@@ -60,28 +66,70 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
 
         const rng = createRng(randomSeed());
         const input = createInput();
+        const store = createHighScoreStore();
         let session = createSession(definition, rng);
+        let best = store.best(definition.id);
+        let entry: InitialsEntry | null = null;
+        let table: HighScore[] = [];
         let published = '';
         let exited = false;
 
         const publish = () => {
             const status = definition.status(session.state);
-            const key = `${session.phase}|${status.score}|${status.won}|${status.hud.map((field) => field.value).join('|')}`;
+            const key = [
+                session.phase,
+                status.score,
+                status.won,
+                best,
+                entry ? `${entryText(entry)}${entry.position}` : '',
+                table.length,
+                ...status.hud.map((field) => field.value)
+            ].join('|');
             if (key !== published) {
                 published = key;
-                setView({ phase: session.phase, status });
+                setView({ phase: session.phase, status, best, entry, table });
+            }
+        };
+
+        const finishEntry = (finished: InitialsEntry) => {
+            table = store.submit(definition.id, entryText(finished), definition.status(session.state).score);
+            best = store.best(definition.id);
+            entry = null;
+        };
+
+        const enterGameOver = () => {
+            const { score } = definition.status(session.state);
+            if (store.qualifies(definition.id, score)) {
+                entry = createEntry();
+            } else {
+                table = store.list(definition.id);
             }
         };
 
         const loop = createLoop({
             update(dtMs) {
                 if (exited) return;
-                const result = advanceSession(definition, session, input.frame(), dtMs, rng);
+                const frame = input.frame();
+                if (entry && !frame.pressed.has('back')) {
+                    const updated = updateEntry(entry, frame.pressed);
+                    if (updated.done) {
+                        finishEntry(updated);
+                    } else {
+                        entry = updated;
+                    }
+                    publish();
+                    return;
+                }
+                const previousPhase = session.phase;
+                const result = advanceSession(definition, session, frame, dtMs, rng);
                 session = result.session;
                 if (result.exit) {
                     exited = true;
                     exit();
                     return;
+                }
+                if (session.phase === 'over' && previousPhase !== 'over') {
+                    enterGameOver();
                 }
                 publish();
             },
@@ -102,6 +150,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
     }, [definition]);
 
     const { width, height } = definition.screen;
+    const score = view.status?.score ?? 0;
     return (
         <div className="host">
             <dl className="host-hud" aria-live="polite">
@@ -111,6 +160,12 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                         <dd>{field.value}</dd>
                     </div>
                 ))}
+                {view.status && (
+                    <div className="host-hud-field">
+                        <dt>HI</dt>
+                        <dd>{Math.max(view.best, score)}</dd>
+                    </div>
+                )}
             </dl>
             <div ref={frameRef} className="host-frame">
                 <canvas
@@ -121,52 +176,8 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                     style={{ width: width * scale, height: height * scale }}
                     aria-label={`${definition.title} game screen`}
                 />
-                <Overlay
-                    phase={view.phase}
-                    definition={definition}
-                    score={view.status?.score ?? 0}
-                    won={view.status?.won === true}
-                />
+                <GameOverlay view={view} definition={definition} />
             </div>
-        </div>
-    );
-}
-
-interface OverlayProps {
-    phase: Phase;
-    definition: GameDefinition<unknown>;
-    score: number;
-    won: boolean;
-}
-
-function Overlay({ phase, definition, score, won }: OverlayProps) {
-    if (phase === 'playing') return null;
-    return (
-        <div className="host-overlay" role="dialog" aria-label={phase}>
-            {phase === 'ready' && (
-                <>
-                    <h2>{definition.title}</h2>
-                    <ul className="host-controls">
-                        {definition.controls.map((hint) => (
-                            <li key={hint.keys}><kbd>{hint.keys}</kbd> {hint.action}</li>
-                        ))}
-                    </ul>
-                    <p className="blink">PRESS ENTER TO START</p>
-                </>
-            )}
-            {phase === 'paused' && (
-                <>
-                    <h2>PAUSED</h2>
-                    <p>P TO RESUME · ESC TO EXIT</p>
-                </>
-            )}
-            {phase === 'over' && (
-                <>
-                    <h2>{won ? 'YOU WIN' : 'GAME OVER'}</h2>
-                    <p>SCORE {score}</p>
-                    <p className="blink">PRESS ENTER TO PLAY AGAIN</p>
-                </>
-            )}
         </div>
     );
 }
