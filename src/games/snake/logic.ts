@@ -1,3 +1,4 @@
+import type { SoundName } from '../../engine/audio.ts';
 import { createRng, type Rng } from '../../engine/rng.ts';
 import type { Button, GameStatus, InputFrame } from '../../engine/types.ts';
 
@@ -144,4 +145,15 @@ export function status(state: SnakeState): GameStatus {
             { label: 'SPEED', value: SPEEDS[state.speedIndex]?.label ?? '' }
         ]
     };
+}
+
+export function sounds(previous: SnakeState, next: SnakeState): SoundName[] {
+    if (previous.mode === 'select') {
+        if (next.mode === 'running') return ['select'];
+        return next.speedIndex === previous.speedIndex ? [] : ['move'];
+    }
+    if (next.mode === previous.mode) {
+        return next.score > previous.score ? ['eat'] : [];
+    }
+    return next.mode === 'dead' ? ['die'] : ['win'];
 }

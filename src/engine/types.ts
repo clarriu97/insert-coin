@@ -1,6 +1,7 @@
+import type { SoundName } from './audio.ts';
 import type { Rng } from './rng.ts';
 
-export type Button = 'up' | 'down' | 'left' | 'right' | 'action' | 'secondary' | 'tertiary' | 'pause' | 'back' | 'start';
+export type Button = 'up' | 'down' | 'left' | 'right' | 'action' | 'secondary' | 'tertiary' | 'pause' | 'back' | 'start' | 'mute';
 
 export interface InputFrame {
     held: ReadonlySet<Button>;
@@ -48,4 +49,5 @@ export interface GameDefinition<S> {
     step(state: S, input: InputFrame, dtMs: number): S;
     render(ctx: CanvasRenderingContext2D, state: S, palette: Palette): void;
     status(state: S): GameStatus;
+    sounds?(previous: S, next: S): SoundName[];
 }

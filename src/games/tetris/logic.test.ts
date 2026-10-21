@@ -14,6 +14,7 @@ import {
     pieceCells,
     ROWS,
     rotate,
+    sounds,
     status,
     step,
     type Board,
@@ -364,5 +365,51 @@ describe('auto shift', () => {
         const left = step(right, frame(['left'], ['left', 'right']), 16);
         expect(left.active.x).toBe(3);
         expect(step(left, frame([], ['left', 'right']), DAS_MS).active.x).toBe(2);
+    });
+});
+
+describe('sounds', () => {
+    const playing = () => game({ active: piece('T', 0, 4, 5) });
+
+    it('plays nothing when nothing audible changed', () => {
+        const state = playing();
+        expect(sounds(state, step(state, frame(), 16))).toEqual([]);
+    });
+
+    it('plays move on a shift and rotate on a rotation', () => {
+        const state = playing();
+        expect(sounds(state, step(state, frame(['left'], ['left']), 16))).toEqual(['move']);
+        expect(sounds(state, step(state, frame(['up']), 16))).toEqual(['rotate']);
+    });
+
+    it('plays nothing when a shift is blocked', () => {
+        const state = game({ active: piece('T', 0, 0, 5) });
+        expect(sounds(state, step(state, frame(['left'], ['left']), 16))).toEqual([]);
+    });
+
+    it('plays drop when a piece locks without clearing lines', () => {
+        const state = playing();
+        expect(sounds(state, step(state, frame(['action']), 16))).toEqual(['drop']);
+    });
+
+    it('plays hold when the piece is held', () => {
+        const state = playing();
+        expect(sounds(state, step(state, frame(['tertiary']), 16))).toEqual(['hold']);
+    });
+
+    it('plays line for one to three lines and tetris for four', () => {
+        const single = game({ board: boardWith(fullRows([ROWS - 1], 9)), active: piece('I', 1, 7, ROWS - 4) });
+        expect(sounds(single, step(single, frame(['action']), 16))).toEqual(['line']);
+
+        const four = game({ board: boardWith(fullRows([18, 19, 20, 21], 9)), active: piece('I', 1, 7, 0) });
+        expect(sounds(four, step(four, frame(['action']), 16))).toEqual(['tetris']);
+    });
+
+    it('plays die once on game over', () => {
+        const board = boardWith([[3, 1], [4, 1], [5, 1], [6, 1], [3, 2], [4, 2], [5, 2], [6, 2]]);
+        const state = game({ board, active: piece('O', 0, 0, 5) });
+        const over = step(state, frame(['action']), 16);
+        expect(sounds(state, over)).toEqual(['die']);
+        expect(sounds(over, over)).toEqual([]);
     });
 });

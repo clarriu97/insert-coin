@@ -1,5 +1,5 @@
 import type { GameDefinition } from '../../engine/types.ts';
-import { create, status, step, type TetrisState } from './logic.ts';
+import { create, sounds, status, step, type TetrisState } from './logic.ts';
 import { render, SCREEN } from './render.ts';
 
 export const tetris: GameDefinition<TetrisState> = {
@@ -17,5 +17,6 @@ export const tetris: GameDefinition<TetrisState> = {
     create,
     step,
     status,
-    render
+    render,
+    sounds
 };
