@@ -1,14 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
+
+const games = ['/snake', '/tetris'];
 
 function HomeView() {
     const navigate = useNavigate();
     const base = import.meta.env.BASE_URL;
-    const games = ['/snake', '/tetris'];
     const [selectedIndex, setSelectedIndex] = useState(0);
 
     useEffect(() => {
-        const onKeyDown = (e) => {
+        const onKeyDown = (e: KeyboardEvent) => {
             if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Enter', ' '].includes(e.key)) {
                 e.preventDefault();
             }
@@ -18,13 +19,13 @@ function HomeView() {
             } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
                 setSelectedIndex((prev) => (prev + 1) % games.length);
             } else if (e.key === 'Enter' || e.key === ' ') {
-                navigate(games[selectedIndex]);
+                navigate(games[selectedIndex] ?? '/');
             }
         };
 
         window.addEventListener('keydown', onKeyDown);
         return () => window.removeEventListener('keydown', onKeyDown);
-    }, [games, navigate, selectedIndex]);
+    }, [navigate, selectedIndex]);
 
     return (
         <div className="app-shell">

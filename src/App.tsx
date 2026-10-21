@@ -1,6 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router-dom';
-import HomeView from './views/HomeView.jsx';
-import LegacyGameView from './views/LegacyGameView.jsx';
+import { Navigate, Route, Routes } from 'react-router';
+import HomeView from './views/HomeView.tsx';
+import LegacyGameView from './views/LegacyGameView.tsx';
 
 const base = import.meta.env.BASE_URL;
 
