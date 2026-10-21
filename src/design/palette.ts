@@ -5,7 +5,7 @@ export const DEFAULT_PALETTE: Palette = {
     foreground: '#f1eee4',
     accent: '#ffb52e',
     danger: '#ff4f8b',
-    muted: '#8d8a9a',
+    muted: '#a3a0b0',
     primary: '#58ff7a',
     secondary: '#44e0ff',
     orange: '#ff7a33',

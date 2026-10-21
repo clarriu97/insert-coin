@@ -63,7 +63,8 @@
 }
 
 .menu-item:focus-visible {
-  outline: none;
+  outline: 2px solid var(--phosphor-amber);
+  outline-offset: 2px;
 }
 
 .menu-cursor {
@@ -153,7 +154,10 @@
 }
 
 .attract {
-  height: 100%;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: var(--crt-black);
   display: grid;
   place-items: center;
   padding: var(--space-6);

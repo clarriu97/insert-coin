@@ -13,7 +13,7 @@ export function MuteToggle() {
             aria-pressed={!muted}
             onClick={() => audio.toggleMute()}
         >
-            {muted ? 'SOUND OFF' : 'SOUND ON'}
+            SOUND <span aria-hidden="true">{muted ? 'OFF' : 'ON'}</span>
         </button>
     );
 }
