@@ -200,7 +200,7 @@ function usePixelScale(ref: RefObject<HTMLElement | null>, screen: Screen): numb
             if (!entry) return;
             const { width, height } = entry.contentRect;
             const fit = Math.min(width / screen.width, height / screen.height);
-            setScale(fit >= 2 ? Math.floor(fit) : fit);
+            setScale(fit >= 1 ? Math.floor(fit * 4) / 4 : fit);
         });
         observer.observe(element);
         return () => observer.disconnect();
