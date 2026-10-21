@@ -20,6 +20,7 @@ export function Cabinet({ tag, title, screenLabel, bezelNote, panel, children }:
 
                 <section className="bezel" aria-label={screenLabel}>
                     <div className="crt">
+                        <span className="crt-band" aria-hidden="true" />
                         <div className="crt-content">{children}</div>
                     </div>
                     <p className="bezel-card">{bezelNote}</p>

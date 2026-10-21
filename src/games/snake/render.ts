@@ -17,7 +17,14 @@ function text(ctx: CanvasRenderingContext2D, value: string, y: number, color: st
     ctx.fillText(value, SCREEN.width / 2, y);
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D, palette: Palette) {
+let gridCache: { palette: Palette; image: CanvasImageSource } | null = null;
+
+function gridImage(palette: Palette): CanvasImageSource | null {
+    if (gridCache?.palette === palette) return gridCache.image;
+    if (typeof OffscreenCanvas === 'undefined') return null;
+    const image = new OffscreenCanvas(SCREEN.width, SCREEN.height);
+    const ctx = image.getContext('2d');
+    if (!ctx) return null;
     ctx.fillStyle = palette.muted;
     ctx.globalAlpha = 0.18;
     for (let y = 1; y < GRID; y++) {
@@ -28,6 +35,15 @@ function drawGrid(ctx: CanvasRenderingContext2D, palette: Palette) {
     ctx.globalAlpha = 1;
     ctx.strokeStyle = palette.muted;
     ctx.strokeRect(0.5, 0.5, SCREEN.width - 1, SCREEN.height - 1);
+    gridCache = { palette, image };
+    return image;
+}
+
+function drawGrid(ctx: CanvasRenderingContext2D, palette: Palette) {
+    const image = gridImage(palette);
+    if (image) {
+        ctx.drawImage(image, 0, 0);
+    }
 }
 
 function drawBody(ctx: CanvasRenderingContext2D, snake: Point[], palette: Palette) {

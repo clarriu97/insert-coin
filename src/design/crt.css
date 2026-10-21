@@ -24,10 +24,19 @@
 }
 
 .crt::before {
-  background:
-    repeating-linear-gradient(to bottom, transparent 0 2px, color-mix(in srgb, var(--shadow) 28%, transparent) 2px 3px),
-    linear-gradient(to bottom, transparent 0%, color-mix(in srgb, var(--phosphor-white) 4%, transparent) 48%, transparent 52%) 0 -100vh / 100% 30% no-repeat;
+  background: repeating-linear-gradient(to bottom, transparent 0 2px, color-mix(in srgb, var(--shadow) 28%, transparent) 2px 3px);
+}
+
+.crt-band {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 30%;
+  z-index: 2;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--phosphor-white) 4%, transparent) 50%, transparent);
+  transform: translateY(-100%);
   animation: crt-scan 7s linear infinite;
+  will-change: transform;
 }
 
 .crt::after {
@@ -35,6 +44,7 @@
     radial-gradient(ellipse at 22% 12%, color-mix(in srgb, var(--phosphor-white) 7%, transparent), transparent 38%),
     radial-gradient(ellipse at 50% 50%, transparent 62%, color-mix(in srgb, var(--shadow) 55%, transparent) 100%);
   animation: crt-flicker 4s steps(1) infinite;
+  will-change: opacity;
 }
 
 .crt-content {
@@ -45,7 +55,7 @@
 
 @keyframes crt-scan {
   to {
-    background-position: 0 0, 0 200vh;
+    transform: translateY(440%);
   }
 }
 
