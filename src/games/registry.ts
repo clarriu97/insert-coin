@@ -32,6 +32,13 @@ export const GAMES: GameEntry[] = [
         load: () => import('./invaders/index.ts').then((module) => module.invaders)
     },
     {
+        id: 'asteroids',
+        title: 'ASTEROIDS',
+        cover: 'games/asteroids.svg',
+        players: '1 PLAYER',
+        load: () => import('./asteroids/index.ts').then((module) => module.asteroids)
+    },
+    {
         id: 'demo',
         title: 'TEST PATTERN',
         cover: 'favicon.svg',
