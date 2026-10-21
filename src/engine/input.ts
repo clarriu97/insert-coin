@@ -19,6 +19,7 @@ export const KEY_BINDINGS: Readonly<Record<string, Button>> = {
     ShiftRight: 'tertiary',
     KeyL: 'tertiary',
     KeyP: 'pause',
+    KeyM: 'mute',
     Escape: 'back',
     Enter: 'start'
 };

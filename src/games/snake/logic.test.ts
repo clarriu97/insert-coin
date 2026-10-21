@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createRng } from '../../engine/rng.ts';
 import type { Button, InputFrame } from '../../engine/types.ts';
-import { create, GRID, SPEEDS, status, step, type Point, type SnakeState } from './logic.ts';
+import { create, GRID, sounds, SPEEDS, status, step, type Point, type SnakeState } from './logic.ts';
 
 function frame(pressed: Button[] = []): InputFrame {
     return { pressed: new Set(pressed), held: new Set() };
@@ -181,5 +181,35 @@ describe('snake logic', () => {
 
     it('is deterministic for a given seed', () => {
         expect(tick(started(42), 5)).toEqual(tick(started(42), 5));
+    });
+});
+
+describe('snake sounds', () => {
+    it('plays move when the speed changes and select when it is confirmed', () => {
+        const menu = create(createRng(1));
+        expect(sounds(menu, step(menu, frame(['right']), 16))).toEqual(['move']);
+        expect(sounds(menu, step(menu, frame(), 16))).toEqual([]);
+        expect(sounds(menu, step(menu, frame(['action']), 16))).toEqual(['select']);
+    });
+
+    it('plays eat when food is eaten and nothing on a plain move', () => {
+        const state: SnakeState = { ...started(), snake: [{ x: 5, y: 5 }], direction: 'right', food: { x: 6, y: 5 } };
+        const fed = tick(state);
+        expect(sounds(state, fed)).toEqual(['eat']);
+        expect(sounds(fed, tick(fed))).toEqual([]);
+    });
+
+    it('plays die on a crash', () => {
+        const state: SnakeState = { ...started(), snake: [{ x: GRID - 1, y: 5 }], direction: 'right' };
+        const dead = tick(state);
+        expect(sounds(state, dead)).toEqual(['die']);
+        expect(sounds(dead, dead)).toEqual([]);
+    });
+
+    it('plays win when the board is filled', () => {
+        const path = serpentine();
+        const body = path.slice(0, -1).reverse();
+        const state: SnakeState = { ...started(), snake: body, direction: 'left', food: path.at(-1) ?? null };
+        expect(sounds(state, tick(state))).toEqual(['win']);
     });
 });

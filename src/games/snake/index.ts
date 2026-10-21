@@ -1,5 +1,5 @@
 import type { GameDefinition } from '../../engine/types.ts';
-import { create, SCREEN, status, step, type SnakeState } from './logic.ts';
+import { create, SCREEN, sounds, status, step, type SnakeState } from './logic.ts';
 import { render } from './render.ts';
 
 export const snake: GameDefinition<SnakeState> = {
@@ -13,5 +13,6 @@ export const snake: GameDefinition<SnakeState> = {
     create,
     step,
     render,
-    status
+    status,
+    sounds
 };

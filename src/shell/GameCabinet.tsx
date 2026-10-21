@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Cabinet } from './Cabinet.tsx';
+import { MuteToggle } from './MuteToggle.tsx';
 
 interface GameCabinetProps {
     title: string;
@@ -16,7 +17,10 @@ export function GameCabinet({ title, subtitle, onBack, children }: GameCabinetPr
             screenLabel={`${title} screen`}
             bezelNote={subtitle}
             panel={
-                <button className="panel-link" type="button" onClick={onBack}>ESC · BACK TO ARCADE</button>
+                <>
+                    <button className="panel-link" type="button" onClick={onBack}>ESC · BACK TO ARCADE</button>
+                    <MuteToggle />
+                </>
             }
         >
             {children}

@@ -1,3 +1,4 @@
+import type { SoundName } from '../../engine/audio.ts';
 import { createRng, type Rng } from '../../engine/rng.ts';
 import type { GameStatus, InputFrame } from '../../engine/types.ts';
 import { cells, kicks, PIECE_KINDS, spawnColumn, type Offset, type PieceKind, type Rotation } from './srs.ts';
@@ -274,4 +275,15 @@ export function status(state: TetrisState): GameStatus {
             { label: 'LINES', value: state.lines }
         ]
     };
+}
+
+export function sounds(previous: TetrisState, next: TetrisState): SoundName[] {
+    if (next.over) return previous.over ? [] : ['die'];
+    const cleared = next.lines - previous.lines;
+    if (cleared >= 4) return ['tetris'];
+    if (cleared > 0) return ['line'];
+    if (next.board !== previous.board) return ['drop'];
+    if (next.holdUsed && !previous.holdUsed) return ['hold'];
+    if (next.active.rotation !== previous.active.rotation) return ['rotate'];
+    return next.active.x === previous.active.x ? [] : ['move'];
 }
