@@ -385,3 +385,45 @@ body {
   font-size: 0.7rem;
   color: var(--text-dim);
 }
+
+.initials {
+  display: flex;
+  gap: 12px;
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  margin: 0;
+}
+
+.initial {
+  border-bottom: 3px solid transparent;
+  padding-bottom: 4px;
+}
+
+.initial.current {
+  color: var(--marquee-main);
+  border-bottom-color: var(--marquee-main);
+  animation: blink 0.8s steps(2) infinite;
+}
+
+.host-hint {
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.host-table {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  min-width: 12rem;
+}
+
+.host-table li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  gap: 8px;
+}
+
+.host-table li:first-child {
+  color: var(--marquee-main);
+}
