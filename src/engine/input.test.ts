@@ -40,9 +40,10 @@ describe('createInput', () => {
         send('keydown', 'KeyZ');
         send('keydown', 'KeyC');
         send('keydown', 'KeyP');
+        send('keydown', 'KeyM');
         send('keydown', 'Escape');
         send('keydown', 'Enter');
-        expect([...input.frame().pressed].sort()).toEqual(['action', 'back', 'pause', 'secondary', 'start', 'tertiary', 'up']);
+        expect([...input.frame().pressed].sort()).toEqual(['action', 'back', 'mute', 'pause', 'secondary', 'start', 'tertiary', 'up']);
     });
 
     it('keeps a quick tap visible in the next frame', () => {

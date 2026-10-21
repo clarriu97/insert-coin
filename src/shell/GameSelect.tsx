@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { appAudio } from '../engine/audio.ts';
 import { createHighScoreStore } from '../engine/highscores.ts';
 import { gamePath, GAMES } from '../games/registry.ts';
 import { Cabinet } from './Cabinet.tsx';
+import { MuteToggle } from './MuteToggle.tsx';
 
 const visibleGames = GAMES.filter((entry) => !entry.hidden);
 const base = import.meta.env.BASE_URL;
@@ -28,6 +30,7 @@ export function GameSelect() {
             const delta = PREVIOUS_KEYS.includes(e.code) ? -1 : NEXT_KEYS.includes(e.code) ? 1 : 0;
             if (delta !== 0) {
                 e.preventDefault();
+                appAudio().play('select');
                 setSelectedIndex((prev) => (prev + delta + visibleGames.length) % visibleGames.length);
             }
         };
@@ -42,9 +45,12 @@ export function GameSelect() {
             screenLabel="Game selection screen"
             bezelNote="USE JOYSTICK TO SELECT · PRESS START TO PLAY"
             panel={
-                <p className="panel-label">
-                    <a href="https://github.com/clarriu97/insert-coin" target="_blank" rel="noreferrer">clarriu97 · GITHUB</a>
-                </p>
+                <>
+                    <MuteToggle />
+                    <p className="panel-label">
+                        <a href="https://github.com/clarriu97/insert-coin" target="_blank" rel="noreferrer">clarriu97 · GITHUB</a>
+                    </p>
+                </>
             }
         >
             <div className="menu">
@@ -66,7 +72,10 @@ export function GameSelect() {
                                 tabIndex={index === selectedIndex ? 0 : -1}
                                 onFocus={() => setSelectedIndex(index)}
                                 onMouseEnter={() => setSelectedIndex(index)}
-                                onClick={() => navigate(gamePath(entry))}
+                                onClick={() => {
+                                    appAudio().play('coin');
+                                    navigate(gamePath(entry));
+                                }}
                             >
                                 <span className="menu-cursor" aria-hidden="true">▶</span>
                                 <span className="menu-name">{entry.title}</span>

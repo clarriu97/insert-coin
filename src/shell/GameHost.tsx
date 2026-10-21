@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useEffectEvent, useRef, useState, type RefObject } from 'react';
 import { useNavigate } from 'react-router';
 import { DEFAULT_PALETTE } from '../design/palette.ts';
+import { appAudio, type SoundName } from '../engine/audio.ts';
 import { createHighScoreStore, type HighScore } from '../engine/highscores.ts';
 import { createEntry, entryText, updateEntry, type InitialsEntry } from '../engine/initials.ts';
 import { createInput, type Input } from '../engine/input.ts';
@@ -69,6 +70,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
         const rng = createRng(randomSeed());
         const input = createInput();
         inputRef.current = input;
+        const audio = appAudio();
         const store = createHighScoreStore();
         let session = createSession(definition, rng);
         let best = store.best(definition.id);
@@ -113,6 +115,9 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
             update(dtMs) {
                 if (exited) return;
                 const frame = input.frame();
+                if (frame.pressed.has('mute')) {
+                    audio.toggleMute();
+                }
                 if (entry && !frame.pressed.has('back')) {
                     const updated = updateEntry(entry, frame.pressed);
                     if (updated.done) {
@@ -123,7 +128,7 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                     publish();
                     return;
                 }
-                const previousPhase = session.phase;
+                const previous = session;
                 const result = advanceSession(definition, session, frame, dtMs, rng);
                 session = result.session;
                 if (result.exit) {
@@ -131,6 +136,17 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
                     exit();
                     return;
                 }
+                const previousPhase = previous.phase;
+                const effects: SoundName[] = previousPhase === 'playing' && session.state !== previous.state
+                    ? [...(definition.sounds?.(previous.state, session.state) ?? [])]
+                    : [];
+                if (session.phase === 'playing' && (previousPhase === 'ready' || previousPhase === 'over')) {
+                    effects.push('start');
+                }
+                if (session.phase === 'over' && previousPhase !== 'over' && effects.length === 0) {
+                    effects.push('die');
+                }
+                effects.forEach((effect) => audio.play(effect));
                 if (session.phase === 'over' && previousPhase !== 'over') {
                     enterGameOver();
                 }
@@ -145,8 +161,14 @@ function GameScreen({ definition, onExit }: GameScreenProps) {
             }
         });
 
+        const unlock = () => audio.unlock();
+        window.addEventListener('keydown', unlock, { once: true });
+        window.addEventListener('pointerdown', unlock, { once: true });
+
         loop.start();
         return () => {
+            window.removeEventListener('keydown', unlock);
+            window.removeEventListener('pointerdown', unlock);
             loop.stop();
             input.dispose();
             inputRef.current = null;
