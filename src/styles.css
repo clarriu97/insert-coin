@@ -427,3 +427,123 @@ body {
 .host-table li:first-child {
   color: var(--marquee-main);
 }
+
+.touch-controls {
+  display: none;
+}
+
+@media (pointer: coarse) {
+  .host {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .touch-controls {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    justify-items: center;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 2px 0;
+  }
+}
+
+.touch-btn {
+  font-family: inherit;
+  color: #f3f6ff;
+  border: 2px solid #2f3b55;
+  background: #0e1320;
+  border-radius: 10px;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.touch-btn:active {
+  background: #1d2740;
+  border-color: var(--marquee-main);
+}
+
+.touch-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 42px);
+  grid-template-rows: repeat(3, 42px);
+  gap: 2px;
+}
+
+.pad-up { grid-area: 1 / 2; }
+.pad-left { grid-area: 2 / 1; }
+.pad-right { grid-area: 2 / 3; }
+.pad-down { grid-area: 3 / 2; }
+
+.touch-system {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.touch-system .touch-btn {
+  font-size: 0.45rem;
+  padding: 8px 6px;
+}
+
+.touch-actions {
+  display: grid;
+  grid-template-columns: repeat(2, 50px);
+  grid-template-rows: repeat(2, 50px);
+  gap: 6px;
+}
+
+.touch-actions .touch-btn {
+  border-radius: 999px;
+  font-size: 0.9rem;
+}
+
+.act-c { grid-area: 1 / 1; }
+.act-b { grid-area: 2 / 1; }
+.act-a { grid-area: 1 / 2 / 3 / 3; align-self: center; height: 50px; background: #3a1020; border-color: #ff4fb2; }
+
+@media (max-width: 600px) {
+  .app-shell {
+    padding: 0;
+  }
+
+  .arcade-machine {
+    border-radius: 0;
+    border-width: 0;
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .game-mode .marquee {
+    padding: 6px;
+  }
+
+  .game-mode .marquee-subtitle {
+    display: none;
+  }
+
+  .game-mode .marquee-title {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+  .game-mode .game-bezel {
+    padding: 4px;
+  }
+
+  .game-mode .control-panel {
+    padding: 6px;
+  }
+
+  .host {
+    padding: 4px;
+    gap: 6px;
+  }
+
+  .host-hud {
+    gap: 12px;
+    font-size: 0.5rem;
+  }
+}

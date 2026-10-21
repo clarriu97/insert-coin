@@ -12,7 +12,10 @@ export default defineConfig({
         baseURL: `http://localhost:${port}${basePath}`,
         trace: 'retain-on-failure'
     },
-    projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+    projects: [
+        { name: 'chromium', use: { ...devices['Desktop Chrome'] }, testIgnore: /touch\.spec\.ts/ },
+        { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /touch\.spec\.ts/ }
+    ],
     webServer: {
         command: `pnpm exec vite preview --port ${port} --strictPort`,
         port,
