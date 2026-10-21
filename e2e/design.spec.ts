@@ -34,3 +34,9 @@ test('the menu is keyboard and mouse navigable', async ({ page }) => {
     await items.first().hover();
     await expect(items.first()).toHaveAttribute('aria-current', 'true');
 });
+
+test('the page has a single main landmark and h1', async ({ page }) => {
+    await page.goto('./');
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+});
