@@ -30,6 +30,8 @@ export interface Palette {
     accent: string;
     danger: string;
     muted: string;
+    primary: string;
+    secondary: string;
 }
 
 export interface Screen {

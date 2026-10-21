@@ -1,18 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+@import './design/tokens.css';
 
 :root {
   --bg-top: #2f3340;
   --bg-bottom: #151821;
-  --cabinet-body: #20242d;
-  --cabinet-edge: #0b0d12;
-  --marquee-main: #ffe566;
-  --marquee-glow: #ff9f1c;
-  --screen-bg: #05070d;
-  --screen-glow: #44f0ff;
-  --green: #63ff7c;
-  --pink: #ff4fb2;
-  --cyan: #44d7ff;
-  --text-dim: #a1abc2;
+  --marquee-main: var(--phosphor-amber);
+  --screen-bg: var(--crt-black);
+  --green: var(--phosphor-green);
+  --pink: var(--phosphor-magenta);
+  --cyan: var(--phosphor-cyan);
+  --text-dim: var(--phosphor-dim);
 }
 
 * {
@@ -29,7 +25,7 @@ body,
 }
 
 body {
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font-display);
   background:
     radial-gradient(circle at 30% 15%, #3f4556 0%, transparent 38%),
     linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
